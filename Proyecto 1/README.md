@@ -34,6 +34,20 @@
 - **_Namespace:_** Es una abstracción que permite a los usuarios y aplicaciones interactuar con los archivos y directorios como si estuvieran almacenados en un único sistema de archivos, incluso cuando en realidad están distribuidos en varios servidores o ubicaciones físicas.
 - **_Checkpoint:_** Es una copia de seguridad del estado actual de una máquina.
 
+## Arquitectura
+
+<p align="center">
+    <img src="https://github.com/msosav/Proyectos-TETL/assets/85181687/10981dee-1dcc-4c64-b88b-251339c73e4b" />
+</p>
+
+### Protocolos de conexión entre los componentes
+
+- **Cliente - NameNode:** Será por medio de Api Rest.
+- **Cliente - DataNode:** Será por medio de Api Rest.
+- **NameNode - DataNode:** Será por medio de gRPC.
+- **DataNode - DataNode:** Será por medio de gRPC.
+- **NameNode - NameNode:** Será por medio de gRPC.
+
 ## Referencias
 
 - The Google File System - Sanjay Ghemawat, Howard Gobioff & Shun-Tak Leung
