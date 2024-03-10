@@ -17,3 +17,11 @@
   Ahora, con respecto al proceso de lectura, el cliente le pregunta al master de donde puede leer el archivo, el master le devuelve las direcciones de los 3 chunkservers para que el cliente haga la consulta. Si alguno de los chunkservers no se encuentra disponible el cliente puede simplemente acceder a otra réplica ya que tiene la dirección de las 3.
 
   Y con el proceso de escritura, el cliente le pide al master en que chunkserver puede escribir, que se denominará el _chunkserver primario_, y este será el encargado de escribir en los otros chunks para que todos tengan la misma información, todo este proceso ocurre de manera lineal.
+
+- **HDFS (Hadoop Distributed File System):** HDFS es un sistema de archivos distribuido creado por Apache y Yahoo. Su arquitectura está constituida por un _NameNode_ que es el encargado de la localización de los recursos y se asegura que siempre hayan 3 replicas de cada bloque de archivo. Los _DataNodes_ que se encarga de almacenar los bloques de archivos y de periodicamente mandarle al servidor información de su capacidad de almacenamiento y otra información relevante para que el NameNode tome decisiones a partir de ello.
+
+  Su funcionamiento e implementación es muy similar al GFS, pero hay dos componentes clave que destacan en HDFS, estos son _ChaeckpointNode_ y _BackupNode_.
+
+   El CheckpointNode es responsable de realizar checkpoints regulares del namespace de HDFS. Esencialmente, el Checkpoint Node almacena una copia del namespace en     un formato más persistente, lo que ayuda a garantizar la integridad y la eficiencia del sistema.
+
+  El BackupNode es siimilar al CheckpointNode, este es responsable de mantener una copia actualizada y persistente del namespace de HDFS, pero, a diferencia del CheckpointNode, el BackupNode no solo mantiene un estado consistente del sistema de archivos en disco, sino que también puede asumir temporalmente las responsabilidades de NameNode en caso de fallo de este último. Lo que permite una recuperación más rápida y eficiente del sistema en situaciones críticas.
