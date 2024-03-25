@@ -46,6 +46,31 @@ def partition_name(i):
     return name
 
 
+def join_files(input_file, num_partitions=10000):
+    """
+    Une las particiones de un archivo
+    param file: El archivo a unir
+    param num_partitions: El número máximo de particiones
+    return: None
+    """
+    storage = "Storage"
+    path = os.path.join(storage, input_file)
+
+    if not os.path.isdir(path):
+        raise FileNotFoundError(f"Directory '{input_file}' not found.")
+
+    output_file = f"output_{input_file}"
+    with open(output_file, 'w') as output:
+        for i in range(num_partitions):
+            partition_file = f"{path}/{partition_name(i)}"
+            if not os.path.isfile(partition_file):
+                break
+            with open(partition_file, 'r') as partition:
+                output.write(partition.read())
+
+    print(f"Partitions of file '{input_file}' joined into '{output_file}'.")
+
+
 if __name__ == '__main__':
     while True:
         command = input()
@@ -57,3 +82,7 @@ if __name__ == '__main__':
             file = command_args[1]
             print(f"Opening file '{file}'")
             partition_file(file)
+        elif instruction == 'read':
+            file = command_args[1]
+            print(f"Reading file '{file}'")
+            join_files(file)
