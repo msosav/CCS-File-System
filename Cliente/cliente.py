@@ -3,7 +3,9 @@ Cliente
 """
 
 import os
-
+import ccs_pb2
+import ccs_pb2_grpc
+import grpc
 
 def partition_file(input_file):
     """
@@ -70,6 +72,42 @@ def join_files(input_file, num_partitions=10000):
 
     print(f"Partitions of file '{input_file}' joined into '{output_file}'.")
 
+def read_file(file):
+    """
+    Lee un archivo
+    param file: El archivo a leer
+    return: None
+    """
+    with open(file, 'rb') as file:
+        print(file.read())
+
+def url_request(file_name):
+    """
+    Realiza una solicitud a la URL
+    param file_name: El nombre del archivo
+    return: None
+    """
+    channel = grpc.insecure_channel('localhost:50050')
+    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+    response = stub.GetUrl(ccs_pb2.urlRequest(file_name=file_name))
+    return response.url
+
+def upload_file(file_name):
+    url = url_request(file_name)
+
+    with grpc.insecure_channel(url) as channel:
+        stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+
+        with open(file_name, "rb") as f:
+            file_data = f.read()
+
+        response = stub.TransferFile(
+            ccs_pb2.TransferRequest(
+                file_data=file_data, file_name=file_name, current_replication= 1 
+            )
+        )
+    print(response.message)
+
 
 if __name__ == '__main__':
     while True:
@@ -86,3 +124,7 @@ if __name__ == '__main__':
             file = command_args[1]
             print(f"Reading file '{file}'")
             join_files(file)
+        elif instruction == 'upload':
+            file = command_args[1]
+            print(f"Requesting URL for file '{file}'")
+            upload_file(file)
