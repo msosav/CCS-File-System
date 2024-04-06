@@ -2,6 +2,23 @@
 NameNode
 """
 
+import grpc
+from concurrent import futures
+import namenode_pb2
+import namenode_pb2_grpc
+
+class NameNodeServiceServicer(namenode_pb2_grpc.NameNodeServiceServicer):
+    def ListFiles(self, request, context):
+        ls_files = files.keys()
+        return namenode_pb2.ListFilesResponse(files=ls_files)
+
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    namenode_pb2_grpc.add_NameNodeServiceServicer_to_server(NameNodeServiceServicer(), server)
+    server.add_insecure_port('[::]:50051')
+    server.start()
+    server.wait_for_termination()
+
 # Diccionario que almacena los datanodes y los archivos que contienen
 datanodes = {}
 active_datanodes = []
@@ -49,7 +66,20 @@ def locate_file(file_name):
         return []
     return datanodes[file_name]
 
+def file_system(option):
+    """
+    Muestra el sistema de archivos
+    param option: La opción a mostrar
+    return: None
+    """
+    if option == "ls":
+        return files
+    else:
+        return "Invalid option"
+
 
 if __name__ == "__main__":
     active_datanodes = ["Datanode1", "Datanode2"]
-    print(distribute_file("file4", 3, 3000))
+    files = {"file1": 1000, "file2": 2000}
+    serve()
+
