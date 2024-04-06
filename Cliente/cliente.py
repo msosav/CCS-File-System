@@ -6,6 +6,22 @@ import os
 import ccs_pb2
 import ccs_pb2_grpc
 import grpc
+import namenode_pb2 as namenode_pb2
+import namenode_pb2_grpc as namenode_pb2_grpc
+
+
+def list_files():
+    """
+    Lista los archivos
+    return: None
+    """
+    channel = grpc.insecure_channel('localhost:50051')
+    stub = namenode_pb2_grpc.NameNodeServiceStub(channel)
+    response = stub.ListFiles(namenode_pb2.ListFilesRequest())
+
+    for file in response.files:
+        print(file)
+
 
 def partition_file(input_file):
     """
@@ -128,3 +144,6 @@ if __name__ == '__main__':
             file = command_args[1]
             print(f"Requesting URL for file '{file}'")
             upload_file(file)
+        elif instruction == 'ls':
+            list_files()
+            
