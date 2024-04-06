@@ -1,11 +1,14 @@
 """
 NameNode
 """
+from concurrent import futures
+import grpc
+import Service_pb2
+import Service_pb2_grpc
 
 import ccs_pb2
 import ccs_pb2_grpc
 import random
-import grpc
 from concurrent import futures
 import namenode_pb2
 import namenode_pb2_grpc
@@ -36,22 +39,22 @@ active = []
 files = {}
 
 
-def distribute_file(file_name, num_partitions, size):
+def distribute_file(file_name, num_partitions, size, response):
     """
     Distribuye un archivo en los datanodes
     param file_name: El nombre del archivo
     param num_partitions: La lista de partes del archivo
     return: El diccionario de datanodes
     """
-    datanodes[file_name] = {}
     datanode_index = 0
     for i in range(num_partitions):
         if datanode_index >= len(active_datanodes):
             datanode_index = 0
-        datanodes[file_name][partition_name(i)] = [active_datanodes[datanode_index]]
+        response.partitions[partition_name(
+            i)] = active_datanodes[datanode_index]
         datanode_index += 1
     files[file_name] = size
-    return datanodes[file_name]
+    return response
 
 
 def partition_name(i):
@@ -77,6 +80,21 @@ def locate_file(file_name):
     return datanodes[file_name]
 
 
+class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
+    def CreateRequest(self, request, context):
+        """
+        Crea un archivo
+        param request: El archivo a crear
+        return: El diccionario de datanodes
+        """
+        file_name = request.file_name
+        num_partitions = request.num_partitions
+        size = request.size
+        response = Service_pb2.CreateResponse()
+        response = distribute_file(file_name, num_partitions, size, response)
+        return response
+
+
 def file_system(option):
     """
     Muestra el sistema de archivos
@@ -100,7 +118,8 @@ class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
             print("hola" + url)
             return ccs_pb2.urlResponse(url=url)
         else:
-            active_urls = [x for x in active if x not in files[request.file_name]]
+            active_urls = [
+                x for x in active if x not in files[request.file_name]]
             if not active_urls:
                 return ccs_pb2.urlResponse(url="")
             url = random.choice(active_urls)
@@ -108,12 +127,10 @@ class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
 
 
 if __name__ == "__main__":
-    active = ["localhost:50051"]
-    files = {"file1": ["localhost:50051"], "file2": ["localhost:50052"]}
+    active_datanodes = ["localhost:50051", "localhost:50052"]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    ccs_pb2_grpc.add_FileTransferServiceServicer_to_server(
-        FileTransferServicer(), server
-    )
-    server.add_insecure_port("localhost:50050")
+    Service_pb2_grpc.add_NameNodeServicer_to_server(
+        NameNodeServicer(), server)
+    server.add_insecure_port('[::]:8080')
     server.start()
-    server.wait_for_termination()
+    print("NameNode running at port 8080.")
