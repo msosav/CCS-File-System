@@ -6,9 +6,36 @@ import grpc
 import Service_pb2
 import Service_pb2_grpc
 
+import ccs_pb2
+import ccs_pb2_grpc
+import random
+from concurrent import futures
+import namenode_pb2
+import namenode_pb2_grpc
+
+
+class NameNodeServiceServicer(namenode_pb2_grpc.NameNodeServiceServicer):
+    def ListFiles(self, request, context):
+        ls_files = files.keys()
+        return namenode_pb2.ListFilesResponse(files=ls_files)
+
+
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    namenode_pb2_grpc.add_NameNodeServiceServicer_to_server(
+        NameNodeServiceServicer(), server
+    )
+    server.add_insecure_port("[::]:50051")
+    server.start()
+    server.wait_for_termination()
+
+
 # Diccionario que almacena los datanodes y los archivos que contienen
 datanodes = {}
 active_datanodes = []
+files = {}
+
+active = []
 files = {}
 
 
@@ -37,7 +64,7 @@ def partition_name(i):
     return: El nombre de la partición
     """
     length = len(str(i))
-    serial = '0' * (4 - length) + str(i)
+    serial = "0" * (4 - length) + str(i)
     name = f"part-{serial}"
     return name
 
@@ -68,6 +95,37 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
         return response
 
 
+def file_system(option):
+    """
+    Muestra el sistema de archivos
+    param option: La opción a mostrar
+    return: None
+    """
+    if option == "ls":
+        return files
+    else:
+        return "Invalid option"
+
+
+class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
+    def GetUrl(self, request, context):
+        print(f"Received request for URL of file '{request.file_name}'")
+        if not active:
+            return ccs_pb2.urlResponse(url="")
+        if request.file_name not in files:
+            print("what")
+            url = random.choice(active)
+            print("hola" + url)
+            return ccs_pb2.urlResponse(url=url)
+        else:
+            active_urls = [
+                x for x in active if x not in files[request.file_name]]
+            if not active_urls:
+                return ccs_pb2.urlResponse(url="")
+            url = random.choice(active_urls)
+            return ccs_pb2.urlResponse(url=url)
+
+
 if __name__ == "__main__":
     active_datanodes = ["localhost:50051", "localhost:50052"]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -76,4 +134,3 @@ if __name__ == "__main__":
     server.add_insecure_port('[::]:8080')
     server.start()
     print("NameNode running at port 8080.")
-    server.wait_for_termination()
