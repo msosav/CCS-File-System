@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+message Create {
+    string file_name = 1;
+    int32 num_partitions = 2;
+    int32 size = 3;
+}
+
+message CreateResponse {
+    map<string, string> partitions = 1;
+    int32 status_code = 2;
+}
+
+service NameNode {
+    rpc CreateRequest(Create) returns (CreateResponse) {}
+}

@@ -3,13 +3,16 @@ Cliente
 """
 
 import os
+import grpc
+import Service_pb2
+import Service_pb2_grpc
 
 
 def partition_file(input_file):
     """
     Divide el archivo en partes de 1000 bytes
-    param file: El archivo a dividir
-    return: None
+    param input_file: El archivo a dividir
+    return: El número de particiones
     """
     if not os.path.isfile(input_file):
         raise FileNotFoundError(f"File '{input_file}' not found.")
@@ -31,7 +34,7 @@ def partition_file(input_file):
         with open(output_file, 'w') as file:
             file.write(partition_content)
 
-    print(f"File '{input_file}' partitioned into {num_partitions} files.")
+    return num_partitions
 
 
 def partition_name(i):
@@ -49,7 +52,7 @@ def partition_name(i):
 def join_files(input_file, num_partitions=10000):
     """
     Une las particiones de un archivo
-    param file: El archivo a unir
+    param input_file: El archivo a unir
     param num_partitions: El número máximo de particiones
     return: None
     """
@@ -72,16 +75,21 @@ def join_files(input_file, num_partitions=10000):
 
 
 if __name__ == '__main__':
+    channel = grpc.insecure_channel('[::]:8080')
+    stub = Service_pb2_grpc.NameNodeStub(channel)
     while True:
         command = input()
         command_args = command.split(" ")
         instruction = command_args[0]
         if instruction == 'exit':
             break
-        elif instruction == 'open':
+        elif instruction == 'create':
             file = command_args[1]
-            print(f"Opening file '{file}'")
-            partition_file(file)
+            num_partitions = partition_file(file)
+            size = os.path.getsize(file)
+            response = stub.CreateRequest(
+                Service_pb2.Create(file_name=file, num_partitions=num_partitions, size=size))
+            partitions = response.partitions  # key: partition_name, value: datanode
         elif instruction == 'read':
             file = command_args[1]
             print(f"Reading file '{file}'")
