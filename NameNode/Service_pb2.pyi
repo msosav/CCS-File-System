@@ -78,3 +78,33 @@ class ListFilesResponse(_message.Message):
     FILES_FIELD_NUMBER: _ClassVar[int]
     files: _containers.ScalarMap[str, int]
     def __init__(self, files: _Optional[_Mapping[str, int]] = ...) -> None: ...
+
+class SaveNodeFileRequest(_message.Message):
+    __slots__ = ("file_name", "partition_name", "url")
+    FILE_NAME_FIELD_NUMBER: _ClassVar[int]
+    PARTITION_NAME_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
+    file_name: str
+    partition_name: str
+    url: str
+    def __init__(self, file_name: _Optional[str] = ..., partition_name: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...
+
+class SaveNodeFileResponse(_message.Message):
+    __slots__ = ("message",)
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    message: str
+    def __init__(self, message: _Optional[str] = ...) -> None: ...
+
+class HeartBeatRequest(_message.Message):
+    __slots__ = ("url", "timestamp")
+    URL_FIELD_NUMBER: _ClassVar[int]
+    TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
+    url: str
+    timestamp: int
+    def __init__(self, url: _Optional[str] = ..., timestamp: _Optional[int] = ...) -> None: ...
+
+class HeartBeatResponse(_message.Message):
+    __slots__ = ("message",)
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    message: str
+    def __init__(self, message: _Optional[str] = ...) -> None: ...

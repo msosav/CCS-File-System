@@ -37,16 +37,28 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
         storage_path = f"{file_name}/{partition_name}"
         with open(storage_path, "wb") as f:
             f.write(request.partition_data)
+        if request.current_replication < 3:
+            request.current_replication += 1
+            url = get_replication_url(partition_name, file_name)
+            if url == "":
+                return Service_pb2.SendPartitionResponse(status_code=200)
+            with grpc.insecure_channel(url) as channel:
+                stub = Service_pb2_grpc.DataNodeStub(channel)
+                stub.SendPartition(request)
+        return Service_pb2.SendPartitionResponse(status_code=200)
 
 
 def send_heartbeats():
     while True:
         timestamp = int(time.time())
         try:
-            channel = grpc.insecure_channel("localhost:50050")
-            stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
-            stub.Heart(ccs_pb2.HeartRequest(
-                url="localhost:50051", timestamp=timestamp))
+            channel = grpc.insecure_channel("localhost:8080")
+            stub = Service_pb2_grpc.NameNodeStub(channel)
+            stub.HeartBeat(
+                Service_pb2.HeartBeatRequest(
+                    url="localhost:50051", timestamp=timestamp
+                )
+            )
         except Exception as e:
             print(e)
         time.sleep(10)
@@ -56,34 +68,12 @@ def send_heartbeats():
 
 
 def save_node_file(file_name):
-    channel = grpc.insecure_channel("localhost:50050")
-    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+    channel = grpc.insecure_channel("localhost:8080")
+    stub = Service_pb2_grpc.NameNodeStub(channel)
     stub.SaveNodeFile(
-        ccs_pb2.SaveNodeFileRequest(file_name=file_name, url="localhost:50051")
+        Service_pb2.SaveNodeFileRequest(
+            file_name=file_name, url="localhost:50051")
     )
-
-
-class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
-    def TransferFile(self, request, context):
-        print("llegueeeeeeeeee")
-        name = get_extension(request.file_name)[0]
-        extension = get_extension(request.file_name)[1]
-        with open(f"{name}${request.current_replication}.{extension}", "wb") as f:
-            f.write(request.file_data)
-        save_node_file(request.file_name)
-        if request.current_replication < 3:
-            print(
-                f"Replicating '{request.current_replication}' of file '{
-                    request.file_name}"
-            )
-            request.current_replication += 1
-            url = get_replication_url(partition_name, file_name)
-            if url == "":
-                return Service_pb2.SendPartitionResponse(status_code=200)
-            with grpc.insecure_channel(url) as channel:
-                stub = Service_pb2_grpc.DataNodeStub(channel)
-                stub.SendPartition(request)
-        return Service_pb2.SendPartitionResponse(status_code=200)
 
 
 if __name__ == "__main__":

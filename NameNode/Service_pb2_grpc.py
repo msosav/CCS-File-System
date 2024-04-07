@@ -29,6 +29,16 @@ class NameNodeStub(object):
                 request_serializer=Service__pb2.ReplicationUrlRequest.SerializeToString,
                 response_deserializer=Service__pb2.ReplicationUrlResponse.FromString,
                 )
+        self.SaveNodeFile = channel.unary_unary(
+                '/NameNode/SaveNodeFile',
+                request_serializer=Service__pb2.SaveNodeFileRequest.SerializeToString,
+                response_deserializer=Service__pb2.SaveNodeFileResponse.FromString,
+                )
+        self.HeartBeat = channel.unary_unary(
+                '/NameNode/HeartBeat',
+                request_serializer=Service__pb2.HeartBeatRequest.SerializeToString,
+                response_deserializer=Service__pb2.HeartBeatResponse.FromString,
+                )
 
 
 class NameNodeServicer(object):
@@ -52,6 +62,18 @@ class NameNodeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SaveNodeFile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def HeartBeat(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NameNodeServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -69,6 +91,16 @@ def add_NameNodeServicer_to_server(servicer, server):
                     servicer.ReplicationUrl,
                     request_deserializer=Service__pb2.ReplicationUrlRequest.FromString,
                     response_serializer=Service__pb2.ReplicationUrlResponse.SerializeToString,
+            ),
+            'SaveNodeFile': grpc.unary_unary_rpc_method_handler(
+                    servicer.SaveNodeFile,
+                    request_deserializer=Service__pb2.SaveNodeFileRequest.FromString,
+                    response_serializer=Service__pb2.SaveNodeFileResponse.SerializeToString,
+            ),
+            'HeartBeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.HeartBeat,
+                    request_deserializer=Service__pb2.HeartBeatRequest.FromString,
+                    response_serializer=Service__pb2.HeartBeatResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -128,6 +160,40 @@ class NameNode(object):
         return grpc.experimental.unary_unary(request, target, '/NameNode/ReplicationUrl',
             Service__pb2.ReplicationUrlRequest.SerializeToString,
             Service__pb2.ReplicationUrlResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SaveNodeFile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameNode/SaveNodeFile',
+            Service__pb2.SaveNodeFileRequest.SerializeToString,
+            Service__pb2.SaveNodeFileResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def HeartBeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameNode/HeartBeat',
+            Service__pb2.HeartBeatRequest.SerializeToString,
+            Service__pb2.HeartBeatResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
