@@ -116,6 +116,10 @@ def url_request(file_name):
 def upload_file(file_name):
     url = url_request(file_name)
 
+    if url == "":
+        print("No available datanodes.")
+        return
+
     with grpc.insecure_channel(url) as channel:
         stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
 

@@ -12,6 +12,8 @@ import random
 from concurrent import futures
 import namenode_pb2
 import namenode_pb2_grpc
+import time
+from threading import Thread
 
 
 class NameNodeServiceServicer(namenode_pb2_grpc.NameNodeServiceServicer):
@@ -34,6 +36,7 @@ def serve():
 datanodes = {}
 active_datanodes = []
 files = {}
+heartbeats = {}
 
 active_datanodes = []
 files = {}
@@ -105,6 +108,17 @@ def file_system(option):
         return files
     else:
         return "Invalid option"
+    
+def monitor_heartbeats():
+    while True:
+        time.sleep(15)
+        current_time = int(time.time())
+        for url, timestamp in list(heartbeats.items()):
+            if current_time - timestamp > 15:
+                print(f"DataNode {url} is inactive, removing from active list")
+                active_datanodes.remove(url)
+                del heartbeats[url]
+        
 
 
 class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
@@ -130,6 +144,10 @@ class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
             files[request.file_name].append(request.url)
         print(files[request.file_name])
         return ccs_pb2.SaveNodeFileResponse(message="File saved.")
+    def Heart(self, request, context):
+        print(f"Received heartbeat from datanode '{request.url}'")
+        heartbeats[request.url] = request.timestamp
+        return ccs_pb2.HeartResponse(message="File saved.")
 
 
 if __name__ == "__main__":
@@ -138,5 +156,8 @@ if __name__ == "__main__":
     ccs_pb2_grpc.add_FileTransferServiceServicer_to_server(FileTransferServicer(), server)
     server.add_insecure_port('localhost:50050')
     server.start()
-    server.wait_for_termination()
     print("NameNode running at port 8080.")
+    monitor_heartbeats_thread = Thread(target=monitor_heartbeats)
+    monitor_heartbeats_thread.daemon = True
+    monitor_heartbeats_thread.start()
+    server.wait_for_termination()
