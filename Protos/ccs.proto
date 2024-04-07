@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+message TransferRequest {
+  string file_name = 1;
+  bytes file_data = 2;
+  int32 current_replication = 4;
+}
+
+message TransferResponse {
+  string message = 1;
+}
+
+message urlRequest {
+  string file_name = 1;
+}
+
+message urlResponse {
+  string url = 1;
+}
+
+service FileTransferService {
+  rpc TransferFile (TransferRequest) returns (TransferResponse) {}
+  rpc GetUrl (urlRequest) returns (urlResponse) {}
+}

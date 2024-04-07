@@ -3,6 +3,10 @@ Cliente
 """
 
 import os
+import Service_pb2
+import Service_pb2_grpc
+import ccs_pb2
+import ccs_pb2_grpc
 import grpc
 import namenode_pb2 as namenode_pb2
 import namenode_pb2_grpc as namenode_pb2_grpc
@@ -24,8 +28,8 @@ def list_files():
 def partition_file(input_file):
     """
     Divide el archivo en partes de 1000 bytes
-    param file: El archivo a dividir
-    return: None
+    param input_file: El archivo a dividir
+    return: El número de particiones
     """
     if not os.path.isfile(input_file):
         raise FileNotFoundError(f"File '{input_file}' not found.")
@@ -47,7 +51,7 @@ def partition_file(input_file):
         with open(output_file, 'w') as file:
             file.write(partition_content)
 
-    print(f"File '{input_file}' partitioned into {num_partitions} files.")
+    return num_partitions
 
 
 def partition_name(i):
@@ -65,7 +69,7 @@ def partition_name(i):
 def join_files(input_file, num_partitions=10000):
     """
     Une las particiones de un archivo
-    param file: El archivo a unir
+    param input_file: El archivo a unir
     param num_partitions: El número máximo de particiones
     return: None
     """
@@ -87,21 +91,68 @@ def join_files(input_file, num_partitions=10000):
     print(f"Partitions of file '{input_file}' joined into '{output_file}'.")
 
 
+def read_file(file):
+    """
+    Lee un archivo
+    param file: El archivo a leer
+    return: None
+    """
+    with open(file, 'rb') as file:
+        print(file.read())
+
+
+def url_request(file_name):
+    """
+    Realiza una solicitud a la URL
+    param file_name: El nombre del archivo
+    return: None
+    """
+    channel = grpc.insecure_channel('localhost:50050')
+    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+    response = stub.GetUrl(ccs_pb2.urlRequest(file_name=file_name))
+    return response.url
+
+
+def upload_file(file_name):
+    url = url_request(file_name)
+
+    with grpc.insecure_channel(url) as channel:
+        stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+
+        with open(file_name, "rb") as f:
+            file_data = f.read()
+
+        response = stub.TransferFile(
+            ccs_pb2.TransferRequest(
+                file_data=file_data, file_name=file_name, current_replication=1
+            )
+        )
+    print(response.message)
+
+
 if __name__ == '__main__':
+    channel = grpc.insecure_channel('[::]:8080')
+    stub = Service_pb2_grpc.NameNodeStub(channel)
     while True:
         command = input()
         command_args = command.split(" ")
         instruction = command_args[0]
         if instruction == 'exit':
             break
-        elif instruction == 'open':
+        elif instruction == 'create':
             file = command_args[1]
-            print(f"Opening file '{file}'")
-            partition_file(file)
+            num_partitions = partition_file(file)
+            size = os.path.getsize(file)
+            response = stub.CreateRequest(
+                Service_pb2.Create(file_name=file, num_partitions=num_partitions, size=size))
+            partitions = response.partitions  # key: partition_name, value: datanode
         elif instruction == 'read':
             file = command_args[1]
             print(f"Reading file '{file}'")
             join_files(file)
+        elif instruction == 'upload':
+            file = command_args[1]
+            print(f"Requesting URL for file '{file}'")
+            upload_file(file)
         elif instruction == 'ls':
             list_files()
-            
