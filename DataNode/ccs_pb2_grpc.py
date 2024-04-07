@@ -24,6 +24,11 @@ class FileTransferServiceStub(object):
                 request_serializer=ccs__pb2.urlRequest.SerializeToString,
                 response_deserializer=ccs__pb2.urlResponse.FromString,
                 )
+        self.SaveNodeFile = channel.unary_unary(
+                '/FileTransferService/SaveNodeFile',
+                request_serializer=ccs__pb2.SaveNodeFileRequest.SerializeToString,
+                response_deserializer=ccs__pb2.SaveNodeFileResponse.FromString,
+                )
 
 
 class FileTransferServiceServicer(object):
@@ -41,6 +46,12 @@ class FileTransferServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SaveNodeFile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_FileTransferServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +64,11 @@ def add_FileTransferServiceServicer_to_server(servicer, server):
                     servicer.GetUrl,
                     request_deserializer=ccs__pb2.urlRequest.FromString,
                     response_serializer=ccs__pb2.urlResponse.SerializeToString,
+            ),
+            'SaveNodeFile': grpc.unary_unary_rpc_method_handler(
+                    servicer.SaveNodeFile,
+                    request_deserializer=ccs__pb2.SaveNodeFileRequest.FromString,
+                    response_serializer=ccs__pb2.SaveNodeFileResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +111,22 @@ class FileTransferService(object):
         return grpc.experimental.unary_unary(request, target, '/FileTransferService/GetUrl',
             ccs__pb2.urlRequest.SerializeToString,
             ccs__pb2.urlResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SaveNodeFile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/FileTransferService/SaveNodeFile',
+            ccs__pb2.SaveNodeFileRequest.SerializeToString,
+            ccs__pb2.SaveNodeFileResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

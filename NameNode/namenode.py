@@ -35,7 +35,7 @@ datanodes = {}
 active_datanodes = []
 files = {}
 
-active = []
+active_datanodes = []
 files = {}
 
 
@@ -110,27 +110,33 @@ def file_system(option):
 class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
     def GetUrl(self, request, context):
         print(f"Received request for URL of file '{request.file_name}'")
-        if not active:
+        if not active_datanodes:
             return ccs_pb2.urlResponse(url="")
         if request.file_name not in files:
-            print("what")
-            url = random.choice(active)
-            print("hola" + url)
+            url = random.choice(active_datanodes)
             return ccs_pb2.urlResponse(url=url)
         else:
             active_urls = [
-                x for x in active if x not in files[request.file_name]]
+                x for x in active_datanodes if x not in files[request.file_name]]
             if not active_urls:
                 return ccs_pb2.urlResponse(url="")
             url = random.choice(active_urls)
             return ccs_pb2.urlResponse(url=url)
+    def SaveNodeFile(self, request, context):
+        print(f"Received request to save file '{request.file_name}'")
+        if request.file_name not in files:
+            files[request.file_name] = [request.url]
+        else:
+            files[request.file_name].append(request.url)
+        print(files[request.file_name])
+        return ccs_pb2.SaveNodeFileResponse(message="File saved.")
 
 
 if __name__ == "__main__":
-    active_datanodes = ["localhost:50051", "localhost:50052"]
+    active_datanodes = ["localhost:50051"]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    Service_pb2_grpc.add_NameNodeServicer_to_server(
-        NameNodeServicer(), server)
-    server.add_insecure_port('[::]:8080')
+    ccs_pb2_grpc.add_FileTransferServiceServicer_to_server(FileTransferServicer(), server)
+    server.add_insecure_port('localhost:50050')
     server.start()
+    server.wait_for_termination()
     print("NameNode running at port 8080.")
