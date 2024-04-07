@@ -135,8 +135,6 @@ def upload_file(file_name):
 
 
 if __name__ == '__main__':
-    channel = grpc.insecure_channel('[::]:8080')
-    stub = Service_pb2_grpc.NameNodeStub(channel)
     while True:
         command = input()
         command_args = command.split(" ")
@@ -157,6 +155,9 @@ if __name__ == '__main__':
         elif instruction == 'upload':
             file = command_args[1]
             print(f"Requesting URL for file '{file}'")
+            channel = grpc.insecure_channel("localhost:50050")
+            stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+            response = stub.Heartbeat(ccs_pb2.HeartbeatRequest(url="localhost:50051", beat="si"))
             upload_file(file)
         elif instruction == 'ls':
             list_files()

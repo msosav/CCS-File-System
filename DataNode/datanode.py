@@ -48,9 +48,6 @@ def save_node_file(file_name):
 class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
     def TransferFile(self, request, context):
         print("llegueeeeeeeeee")
-        channel = grpc.insecure_channel("localhost:50050")
-        stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
-        stub.Heartbeat(ccs_pb2.HeartbeatRequest(url="localhost:50051", beat="si"))
         name = get_extension(request.file_name)[0]
         extension = get_extension(request.file_name)[1]
         with open(f"{name}${request.current_replication}.{extension}", "wb") as f:
