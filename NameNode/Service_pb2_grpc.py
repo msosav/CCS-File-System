@@ -14,17 +14,39 @@ class NameNodeStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.CreateRequest = channel.unary_unary(
-                '/NameNode/CreateRequest',
-                request_serializer=Service__pb2.Create.SerializeToString,
+        self.Create = channel.unary_unary(
+                '/NameNode/Create',
+                request_serializer=Service__pb2.CreateRequest.SerializeToString,
                 response_deserializer=Service__pb2.CreateResponse.FromString,
+                )
+        self.ListFiles = channel.unary_unary(
+                '/NameNode/ListFiles',
+                request_serializer=Service__pb2.ListFilesRequest.SerializeToString,
+                response_deserializer=Service__pb2.ListFilesResponse.FromString,
+                )
+        self.ReplicationUrl = channel.unary_unary(
+                '/NameNode/ReplicationUrl',
+                request_serializer=Service__pb2.ReplicationUrlRequest.SerializeToString,
+                response_deserializer=Service__pb2.ReplicationUrlResponse.FromString,
                 )
 
 
 class NameNodeServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def CreateRequest(self, request, context):
+    def Create(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListFiles(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ReplicationUrl(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -33,10 +55,20 @@ class NameNodeServicer(object):
 
 def add_NameNodeServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'CreateRequest': grpc.unary_unary_rpc_method_handler(
-                    servicer.CreateRequest,
-                    request_deserializer=Service__pb2.Create.FromString,
+            'Create': grpc.unary_unary_rpc_method_handler(
+                    servicer.Create,
+                    request_deserializer=Service__pb2.CreateRequest.FromString,
                     response_serializer=Service__pb2.CreateResponse.SerializeToString,
+            ),
+            'ListFiles': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListFiles,
+                    request_deserializer=Service__pb2.ListFilesRequest.FromString,
+                    response_serializer=Service__pb2.ListFilesResponse.SerializeToString,
+            ),
+            'ReplicationUrl': grpc.unary_unary_rpc_method_handler(
+                    servicer.ReplicationUrl,
+                    request_deserializer=Service__pb2.ReplicationUrlRequest.FromString,
+                    response_serializer=Service__pb2.ReplicationUrlResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -49,7 +81,7 @@ class NameNode(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def CreateRequest(request,
+    def Create(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +91,103 @@ class NameNode(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/NameNode/CreateRequest',
-            Service__pb2.Create.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/NameNode/Create',
+            Service__pb2.CreateRequest.SerializeToString,
             Service__pb2.CreateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ListFiles(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameNode/ListFiles',
+            Service__pb2.ListFilesRequest.SerializeToString,
+            Service__pb2.ListFilesResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ReplicationUrl(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameNode/ReplicationUrl',
+            Service__pb2.ReplicationUrlRequest.SerializeToString,
+            Service__pb2.ReplicationUrlResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+
+class DataNodeStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.SendPartition = channel.unary_unary(
+                '/DataNode/SendPartition',
+                request_serializer=Service__pb2.SendPartitionRequest.SerializeToString,
+                response_deserializer=Service__pb2.SendPartitionResponse.FromString,
+                )
+
+
+class DataNodeServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def SendPartition(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_DataNodeServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'SendPartition': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendPartition,
+                    request_deserializer=Service__pb2.SendPartitionRequest.FromString,
+                    response_serializer=Service__pb2.SendPartitionResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'DataNode', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class DataNode(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def SendPartition(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/DataNode/SendPartition',
+            Service__pb2.SendPartitionRequest.SerializeToString,
+            Service__pb2.SendPartitionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

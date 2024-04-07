@@ -5,37 +5,11 @@ from concurrent import futures
 import grpc
 import Service_pb2
 import Service_pb2_grpc
-
-import ccs_pb2
-import ccs_pb2_grpc
 import random
-from concurrent import futures
-import namenode_pb2
-import namenode_pb2_grpc
-
-
-class NameNodeServiceServicer(namenode_pb2_grpc.NameNodeServiceServicer):
-    def ListFiles(self, request, context):
-        ls_files = files.keys()
-        return namenode_pb2.ListFilesResponse(files=ls_files)
-
-
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    namenode_pb2_grpc.add_NameNodeServiceServicer_to_server(
-        NameNodeServiceServicer(), server
-    )
-    server.add_insecure_port("[::]:50051")
-    server.start()
-    server.wait_for_termination()
-
 
 # Diccionario que almacena los datanodes y los archivos que contienen
 datanodes = {}
 active_datanodes = []
-files = {}
-
-active = []
 files = {}
 
 
@@ -52,6 +26,8 @@ def distribute_file(file_name, num_partitions, size, response):
             datanode_index = 0
         response.partitions[partition_name(
             i)] = active_datanodes[datanode_index]
+        datanodes[file_name] = {partition_name(
+            i): active_datanodes[datanode_index]}
         datanode_index += 1
     files[file_name] = size
     return response
@@ -81,7 +57,7 @@ def locate_file(file_name):
 
 
 class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
-    def CreateRequest(self, request, context):
+    def Create(self, request, context):
         """
         Crea un archivo
         param request: El archivo a crear
@@ -93,6 +69,36 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
         response = Service_pb2.CreateResponse()
         response = distribute_file(file_name, num_partitions, size, response)
         return response
+
+    def ListFiles(self, request, context):
+        """
+        Lista los archivos
+        return: None
+        """
+        response = Service_pb2.ListFilesResponse()
+        for key, value in files.items():
+            response.files[key] = value
+        return response
+
+    def ReplicationUrl(self, request, context):
+        """
+        Realiza una solicitud a la URL
+        param request: La solicitud
+        return: La URL
+        """
+        if not active_datanodes:
+            return Service_pb2.ReplicationUrlResponse(url="")
+        partitions_of_file = datanodes[request.file_name]
+        if request.partition_name not in partitions_of_file.keys():
+            url = random.choice(active_datanodes)
+            return Service_pb2.ReplicationUrlResponse(url=url)
+        else:
+            active_urls = [
+                x for x in active_datanodes if x not in partitions_of_file]
+            if not active_urls:
+                return Service_pb2.ReplicationUrlResponse(url="")
+            url = random.choice(active_urls)
+            return Service_pb2.ReplicationUrlResponse(url=url)
 
 
 def file_system(option):
@@ -107,30 +113,13 @@ def file_system(option):
         return "Invalid option"
 
 
-class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
-    def GetUrl(self, request, context):
-        print(f"Received request for URL of file '{request.file_name}'")
-        if not active:
-            return ccs_pb2.urlResponse(url="")
-        if request.file_name not in files:
-            print("what")
-            url = random.choice(active)
-            print("hola" + url)
-            return ccs_pb2.urlResponse(url=url)
-        else:
-            active_urls = [
-                x for x in active if x not in files[request.file_name]]
-            if not active_urls:
-                return ccs_pb2.urlResponse(url="")
-            url = random.choice(active_urls)
-            return ccs_pb2.urlResponse(url=url)
-
-
 if __name__ == "__main__":
-    active_datanodes = ["localhost:50051", "localhost:50052"]
+    active_datanodes = ["localhost:50051", "localhost:50052",
+                        "localhost:50053", "localhost:50054"]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_NameNodeServicer_to_server(
         NameNodeServicer(), server)
     server.add_insecure_port('[::]:8080')
     server.start()
     print("NameNode running at port 8080.")
+    server.wait_for_termination()

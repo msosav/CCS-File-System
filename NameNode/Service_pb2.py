@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rService.proto\"A\n\x06\x43reate\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0enum_partitions\x18\x02 \x01(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x05\"\x8d\x01\n\x0e\x43reateResponse\x12\x33\n\npartitions\x18\x01 \x03(\x0b\x32\x1f.CreateResponse.PartitionsEntry\x12\x13\n\x0bstatus_code\x18\x02 \x01(\x05\x1a\x31\n\x0fPartitionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x32\x37\n\x08NameNode\x12+\n\rCreateRequest\x12\x07.Create\x1a\x0f.CreateResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rService.proto\"H\n\rCreateRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0enum_partitions\x18\x02 \x01(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x05\"\x8d\x01\n\x0e\x43reateResponse\x12\x33\n\npartitions\x18\x01 \x03(\x0b\x32\x1f.CreateResponse.PartitionsEntry\x12\x13\n\x0bstatus_code\x18\x02 \x01(\x05\x1a\x31\n\x0fPartitionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"v\n\x14SendPartitionRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0epartition_name\x18\x02 \x01(\t\x12\x16\n\x0epartition_data\x18\x03 \x01(\x0c\x12\x1b\n\x13\x63urrent_replication\x18\x04 \x01(\x05\",\n\x15SendPartitionResponse\x12\x13\n\x0bstatus_code\x18\x01 \x01(\x05\"B\n\x15ReplicationUrlRequest\x12\x16\n\x0epartition_name\x18\x01 \x01(\t\x12\x11\n\tfile_name\x18\x02 \x01(\t\"%\n\x16ReplicationUrlResponse\x12\x0b\n\x03url\x18\x01 \x01(\t\"\x12\n\x10ListFilesRequest\"o\n\x11ListFilesResponse\x12,\n\x05\x66iles\x18\x01 \x03(\x0b\x32\x1d.ListFilesResponse.FilesEntry\x1a,\n\nFilesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x32\xb2\x01\n\x08NameNode\x12+\n\x06\x43reate\x12\x0e.CreateRequest\x1a\x0f.CreateResponse\"\x00\x12\x34\n\tListFiles\x12\x11.ListFilesRequest\x1a\x12.ListFilesResponse\"\x00\x12\x43\n\x0eReplicationUrl\x12\x16.ReplicationUrlRequest\x1a\x17.ReplicationUrlResponse\"\x00\x32L\n\x08\x44\x61taNode\x12@\n\rSendPartition\x12\x15.SendPartitionRequest\x1a\x16.SendPartitionResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,12 +23,30 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _globals['_CREATERESPONSE_PARTITIONSENTRY']._options = None
   _globals['_CREATERESPONSE_PARTITIONSENTRY']._serialized_options = b'8\001'
-  _globals['_CREATE']._serialized_start=17
-  _globals['_CREATE']._serialized_end=82
-  _globals['_CREATERESPONSE']._serialized_start=85
-  _globals['_CREATERESPONSE']._serialized_end=226
-  _globals['_CREATERESPONSE_PARTITIONSENTRY']._serialized_start=177
-  _globals['_CREATERESPONSE_PARTITIONSENTRY']._serialized_end=226
-  _globals['_NAMENODE']._serialized_start=228
-  _globals['_NAMENODE']._serialized_end=283
+  _globals['_LISTFILESRESPONSE_FILESENTRY']._options = None
+  _globals['_LISTFILESRESPONSE_FILESENTRY']._serialized_options = b'8\001'
+  _globals['_CREATEREQUEST']._serialized_start=17
+  _globals['_CREATEREQUEST']._serialized_end=89
+  _globals['_CREATERESPONSE']._serialized_start=92
+  _globals['_CREATERESPONSE']._serialized_end=233
+  _globals['_CREATERESPONSE_PARTITIONSENTRY']._serialized_start=184
+  _globals['_CREATERESPONSE_PARTITIONSENTRY']._serialized_end=233
+  _globals['_SENDPARTITIONREQUEST']._serialized_start=235
+  _globals['_SENDPARTITIONREQUEST']._serialized_end=353
+  _globals['_SENDPARTITIONRESPONSE']._serialized_start=355
+  _globals['_SENDPARTITIONRESPONSE']._serialized_end=399
+  _globals['_REPLICATIONURLREQUEST']._serialized_start=401
+  _globals['_REPLICATIONURLREQUEST']._serialized_end=467
+  _globals['_REPLICATIONURLRESPONSE']._serialized_start=469
+  _globals['_REPLICATIONURLRESPONSE']._serialized_end=506
+  _globals['_LISTFILESREQUEST']._serialized_start=508
+  _globals['_LISTFILESREQUEST']._serialized_end=526
+  _globals['_LISTFILESRESPONSE']._serialized_start=528
+  _globals['_LISTFILESRESPONSE']._serialized_end=639
+  _globals['_LISTFILESRESPONSE_FILESENTRY']._serialized_start=595
+  _globals['_LISTFILESRESPONSE_FILESENTRY']._serialized_end=639
+  _globals['_NAMENODE']._serialized_start=642
+  _globals['_NAMENODE']._serialized_end=820
+  _globals['_DATANODE']._serialized_start=822
+  _globals['_DATANODE']._serialized_end=898
 # @@protoc_insertion_point(module_scope)

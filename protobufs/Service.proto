@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-message Create {
+message CreateRequest {
     string file_name = 1;
     int32 num_partitions = 2;
     int32 size = 3;
@@ -11,6 +11,38 @@ message CreateResponse {
     int32 status_code = 2;
 }
 
+message SendPartitionRequest {
+    string file_name = 1;
+    string partition_name = 2;
+    bytes partition_data = 3;
+    int32 current_replication = 4;
+}
+
+message SendPartitionResponse {
+    int32 status_code = 1;
+}
+
+message ReplicationUrlRequest {
+    string partition_name = 1;
+    string file_name = 2;
+}
+
+message ReplicationUrlResponse {
+    string url = 1;
+}
+
+message ListFilesRequest {}
+
+message ListFilesResponse {
+    map<string, int32> files = 1;
+}
+
 service NameNode {
-    rpc CreateRequest(Create) returns (CreateResponse) {}
+    rpc Create (CreateRequest) returns (CreateResponse) {}
+    rpc ListFiles (ListFilesRequest) returns (ListFilesResponse) {};
+    rpc ReplicationUrl (ReplicationUrlRequest) returns (ReplicationUrlResponse) {}
+}
+
+service DataNode {
+    rpc SendPartition (SendPartitionRequest) returns (SendPartitionResponse) {}
 }
