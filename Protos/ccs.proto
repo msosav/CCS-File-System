@@ -27,8 +27,18 @@ message SaveNodeFileResponse {
   string message = 1;
 }
 
+message HeartbeatRequest {
+  string url = 1;
+  string beat = 2;
+}
+
+message HeartbeatResponse {
+  string message = 1;
+}
+
 service FileTransferService {
   rpc TransferFile (TransferRequest) returns (TransferResponse) {}
   rpc GetUrl (urlRequest) returns (urlResponse) {}
   rpc SaveNodeFile (SaveNodeFileRequest) returns (SaveNodeFileResponse) {}
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse) {}
 }

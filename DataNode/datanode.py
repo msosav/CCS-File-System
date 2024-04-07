@@ -2,6 +2,8 @@ import ccs_pb2
 import ccs_pb2_grpc
 from concurrent import futures
 import grpc
+import time
+from threading import Thread
 
 
 def get_extension(file_name):
@@ -25,19 +27,35 @@ def url_request(file_name):
     return response.url
 
 
+def send_heartbeats():
+
+    channel = grpc.insecure_channel("localhost:50050")
+    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+    stub.Heartbeat(ccs_pb2.HeartbeatRequest(url="localhost:50051", beat="si"))
+
+
+# Sleep for 10 seconds before sending the next heartbeat
+
+
+def save_node_file(file_name):
+    channel = grpc.insecure_channel("localhost:50050")
+    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+    stub.SaveNodeFile(
+        ccs_pb2.SaveNodeFileRequest(file_name=file_name, url="localhost:50051")
+    )
+
+
 class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
     def TransferFile(self, request, context):
+        print("llegueeeeeeeeee")
+        channel = grpc.insecure_channel("localhost:50050")
+        stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+        stub.Heartbeat(ccs_pb2.HeartbeatRequest(url="localhost:50051", beat="si"))
         name = get_extension(request.file_name)[0]
         extension = get_extension(request.file_name)[1]
         with open(f"{name}${request.current_replication}.{extension}", "wb") as f:
             f.write(request.file_data)
-        with grpc.insecure_channel("localhost:50050") as channel:
-            stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
-            stub.SaveNodeFile(
-                ccs_pb2.SaveNodeFileRequest(
-                    file_name=request.file_name, url="localhost:50051"
-                )
-            )
+        save_node_file(request.file_name)
         if request.current_replication < 3:
             print(
                 f"Replicating '{request.current_replication}' of file '{request.file_name}"
@@ -60,4 +78,7 @@ if __name__ == "__main__":
     )
     server.add_insecure_port("localhost:50051")
     server.start()
+    # send_heartbeats_thread = Thread(target=send_heartbeats)
+    # send_heartbeats_thread.daemon = True
+    # send_heartbeats_thread.start()
     server.wait_for_termination()
