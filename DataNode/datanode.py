@@ -28,10 +28,16 @@ def url_request(file_name):
 
 
 def send_heartbeats():
-
-    channel = grpc.insecure_channel("localhost:50050")
-    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
-    stub.Heartbeat(ccs_pb2.HeartbeatRequest(url="localhost:50051", beat="si"))
+    while True:
+        timestamp = int(time.time())
+        try:
+            channel = grpc.insecure_channel("localhost:50050")
+            stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+            stub.Heart(ccs_pb2.HeartRequest(url="localhost:50051", timestamp=timestamp))
+        except Exception as e:
+            print(e)
+        time.sleep(10)
+        
 
 
 # Sleep for 10 seconds before sending the next heartbeat
@@ -75,7 +81,7 @@ if __name__ == "__main__":
     )
     server.add_insecure_port("localhost:50051")
     server.start()
-    # send_heartbeats_thread = Thread(target=send_heartbeats)
-    # send_heartbeats_thread.daemon = True
-    # send_heartbeats_thread.start()
+    send_heartbeats_thread = Thread(target=send_heartbeats)
+    send_heartbeats_thread.daemon = True
+    send_heartbeats_thread.start()
     server.wait_for_termination()

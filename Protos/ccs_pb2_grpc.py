@@ -29,10 +29,10 @@ class FileTransferServiceStub(object):
                 request_serializer=ccs__pb2.SaveNodeFileRequest.SerializeToString,
                 response_deserializer=ccs__pb2.SaveNodeFileResponse.FromString,
                 )
-        self.Heartbeat = channel.unary_unary(
-                '/FileTransferService/Heartbeat',
-                request_serializer=ccs__pb2.HeartbeatRequest.SerializeToString,
-                response_deserializer=ccs__pb2.HeartbeatResponse.FromString,
+        self.Heart = channel.unary_unary(
+                '/FileTransferService/Heart',
+                request_serializer=ccs__pb2.HeartRequest.SerializeToString,
+                response_deserializer=ccs__pb2.HeartResponse.FromString,
                 )
 
 
@@ -57,7 +57,7 @@ class FileTransferServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Heartbeat(self, request, context):
+    def Heart(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -81,10 +81,10 @@ def add_FileTransferServiceServicer_to_server(servicer, server):
                     request_deserializer=ccs__pb2.SaveNodeFileRequest.FromString,
                     response_serializer=ccs__pb2.SaveNodeFileResponse.SerializeToString,
             ),
-            'Heartbeat': grpc.unary_unary_rpc_method_handler(
-                    servicer.Heartbeat,
-                    request_deserializer=ccs__pb2.HeartbeatRequest.FromString,
-                    response_serializer=ccs__pb2.HeartbeatResponse.SerializeToString,
+            'Heart': grpc.unary_unary_rpc_method_handler(
+                    servicer.Heart,
+                    request_deserializer=ccs__pb2.HeartRequest.FromString,
+                    response_serializer=ccs__pb2.HeartResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -148,7 +148,7 @@ class FileTransferService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def Heartbeat(request,
+    def Heart(request,
             target,
             options=(),
             channel_credentials=None,
@@ -158,8 +158,8 @@ class FileTransferService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/FileTransferService/Heartbeat',
-            ccs__pb2.HeartbeatRequest.SerializeToString,
-            ccs__pb2.HeartbeatResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/FileTransferService/Heart',
+            ccs__pb2.HeartRequest.SerializeToString,
+            ccs__pb2.HeartResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
