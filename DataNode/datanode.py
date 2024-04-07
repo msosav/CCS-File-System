@@ -1,7 +1,8 @@
-import ccs_pb2
-import ccs_pb2_grpc
 from concurrent import futures
 import grpc
+import Service_pb2
+import Service_pb2_grpc
+import os
 import time
 from threading import Thread
 
@@ -15,70 +16,70 @@ def get_extension(file_name):
     return file_name.split(".")
 
 
-def url_request(file_name):
+def get_replication_url(partition_name, file_name):
     """
     Realiza una solicitud a la URL
-    param file_name: El nombre del archivo
+    param partition_name: El nombre de la partición
     return: None
     """
-    channel = grpc.insecure_channel("localhost:50050")
-    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
-    response = stub.GetUrl(ccs_pb2.urlRequest(file_name=file_name))
+    channel = grpc.insecure_channel('localhost:8080')
+    stub = Service_pb2_grpc.NameNodeStub(channel)
+    response = stub.ReplicationUrl(
+        Service_pb2.ReplicationUrlRequest(partition_name=partition_name, file_name=file_name))
     return response.url
+
+
+class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
+    def SendPartition(self, request, context):
+        file_name = request.file_name
+        partition_name = request.partition_name
+        os.makedirs(file_name, exist_ok=True)
+        storage_path = f"{file_name}/{partition_name}"
+        with open(storage_path, "wb") as f:
+            f.write(request.partition_data)
+        if request.current_replication < 3:
+            request.current_replication += 1
+            url = get_replication_url(partition_name, file_name)
+            if url == "":
+                return Service_pb2.SendPartitionResponse(status_code=200)
+            with grpc.insecure_channel(url) as channel:
+                stub = Service_pb2_grpc.DataNodeStub(channel)
+                stub.SendPartition(request)
+        return Service_pb2.SendPartitionResponse(status_code=200)
 
 
 def send_heartbeats():
     while True:
         timestamp = int(time.time())
         try:
-            channel = grpc.insecure_channel("localhost:50050")
-            stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
-            stub.Heart(ccs_pb2.HeartRequest(url="localhost:50051", timestamp=timestamp))
+            channel = grpc.insecure_channel("localhost:8080")
+            stub = Service_pb2_grpc.NameNodeStub(channel)
+            stub.HeartBeat(
+                Service_pb2.HeartBeatRequest(
+                    url="localhost:50051", timestamp=timestamp
+                )
+            )
         except Exception as e:
             print(e)
         time.sleep(10)
-        
 
 
 # Sleep for 10 seconds before sending the next heartbeat
 
 
 def save_node_file(file_name):
-    channel = grpc.insecure_channel("localhost:50050")
-    stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+    channel = grpc.insecure_channel("localhost:8080")
+    stub = Service_pb2_grpc.NameNodeStub(channel)
     stub.SaveNodeFile(
-        ccs_pb2.SaveNodeFileRequest(file_name=file_name, url="localhost:50051")
+        Service_pb2.SaveNodeFileRequest(
+            file_name=file_name, url="localhost:50051")
     )
-
-
-class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
-    def TransferFile(self, request, context):
-        print("llegueeeeeeeeee")
-        name = get_extension(request.file_name)[0]
-        extension = get_extension(request.file_name)[1]
-        with open(f"{name}${request.current_replication}.{extension}", "wb") as f:
-            f.write(request.file_data)
-        save_node_file(request.file_name)
-        if request.current_replication < 3:
-            print(
-                f"Replicating '{request.current_replication}' of file '{request.file_name}"
-            )
-            request.current_replication += 1
-            url = url_request(request.file_name)
-            if url == "":
-                return ccs_pb2.TransferResponse(message="end")
-            with grpc.insecure_channel(url) as channel:
-                stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
-                stub.TransferFile(request)
-
-        return ccs_pb2.TransferResponse(message="File transfer complete.")
 
 
 if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    ccs_pb2_grpc.add_FileTransferServiceServicer_to_server(
-        FileTransferServicer(), server
-    )
+    Service_pb2_grpc.add_DataNodeServicer_to_server(
+        DataNodeServicer(), server)
     server.add_insecure_port("localhost:50051")
     server.start()
     send_heartbeats_thread = Thread(target=send_heartbeats)

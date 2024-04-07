@@ -74,7 +74,6 @@
                 "sha256:fbe80577c7880911d3ad65e5ecc997416c98f354efeba2f8d0f9112a67ed65a5"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.7'",
             "version": "==1.62.1"
         },
         "grpcio-tools": {
@@ -135,7 +134,6 @@
                 "sha256:fe71ca30aabe42591e84ecb9694c0297dc699cc20c5b24d2cb267fb0fc01f947"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.7'",
             "version": "==1.62.1"
         },
         "protobuf": {
