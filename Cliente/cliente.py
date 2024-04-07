@@ -126,6 +126,27 @@ def upload_file(file_name, num_partitions, size):
     shutil.rmtree("client_temp")
 
 
+def upload_file(file_name):
+    url = url_request(file_name)
+
+    if url == "":
+        print("No available datanodes.")
+        return
+
+    with grpc.insecure_channel(url) as channel:
+        stub = ccs_pb2_grpc.FileTransferServiceStub(channel)
+
+        with open(file_name, "rb") as f:
+            file_data = f.read()
+
+        response = stub.TransferFile(
+            ccs_pb2.TransferRequest(
+                file_data=file_data, file_name=file_name, current_replication=1
+            )
+        )
+    print(response.message)
+
+
 if __name__ == '__main__':
     while True:
         command = input()

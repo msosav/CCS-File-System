@@ -6,11 +6,34 @@ import grpc
 import Service_pb2
 import Service_pb2_grpc
 import random
+from concurrent import futures
+import namenode_pb2
+import namenode_pb2_grpc
+import time
+from threading import Thread
+
+
+class NameNodeServiceServicer(namenode_pb2_grpc.NameNodeServiceServicer):
+    def ListFiles(self, request, context):
+        ls_files = files.keys()
+        return namenode_pb2.ListFilesResponse(files=ls_files)
+
+
+def serve():
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    namenode_pb2_grpc.add_NameNodeServiceServicer_to_server(
+        NameNodeServiceServicer(), server
+    )
+    server.add_insecure_port("[::]:50051")
+    server.start()
+    server.wait_for_termination()
+
 
 # Diccionario que almacena los datanodes y los archivos que contienen
 datanodes = {}
 active_datanodes = []
 files = {}
+heartbeats = {}
 
 
 def distribute_file(file_name, num_partitions, size, response):
@@ -113,13 +136,57 @@ def file_system(option):
         return "Invalid option"
 
 
+def monitor_heartbeats():
+    while True:
+        time.sleep(15)
+        current_time = int(time.time())
+        for url, timestamp in list(heartbeats.items()):
+            if current_time - timestamp > 15:
+                print(f"DataNode {url} is inactive, removing from active list")
+                active_datanodes.remove(url)
+                del heartbeats[url]
+
+
+class FileTransferServicer(ccs_pb2_grpc.FileTransferService):
+    def GetUrl(self, request, context):
+        print(f"Received request for URL of file '{request.file_name}'")
+        if not active_datanodes:
+            return ccs_pb2.urlResponse(url="")
+        if request.file_name not in files:
+            url = random.choice(active_datanodes)
+            return ccs_pb2.urlResponse(url=url)
+        else:
+            active_urls = [
+                x for x in active_datanodes if x not in files[request.file_name]]
+            if not active_urls:
+                return ccs_pb2.urlResponse(url="")
+            url = random.choice(active_urls)
+            return ccs_pb2.urlResponse(url=url)
+
+    def SaveNodeFile(self, request, context):
+        print(f"Received request to save file '{request.file_name}'")
+        if request.file_name not in files:
+            files[request.file_name] = [request.url]
+        else:
+            files[request.file_name].append(request.url)
+        print(files[request.file_name])
+        return ccs_pb2.SaveNodeFileResponse(message="File saved.")
+
+    def Heart(self, request, context):
+        print(f"Received heartbeat from datanode '{request.url}'")
+        heartbeats[request.url] = request.timestamp
+        return ccs_pb2.HeartResponse(message="File saved.")
+
+
 if __name__ == "__main__":
-    active_datanodes = ["localhost:50051", "localhost:50052",
-                        "localhost:50053", "localhost:50054"]
+    active_datanodes = ["localhost:50051"]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    Service_pb2_grpc.add_NameNodeServicer_to_server(
-        NameNodeServicer(), server)
-    server.add_insecure_port('[::]:8080')
+    ccs_pb2_grpc.add_FileTransferServiceServicer_to_server(
+        FileTransferServicer(), server)
+    server.add_insecure_port('localhost:50050')
     server.start()
     print("NameNode running at port 8080.")
+    monitor_heartbeats_thread = Thread(target=monitor_heartbeats)
+    monitor_heartbeats_thread.daemon = True
+    monitor_heartbeats_thread.start()
     server.wait_for_termination()
