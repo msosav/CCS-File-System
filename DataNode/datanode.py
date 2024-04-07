@@ -31,12 +31,24 @@ def get_replication_url(partition_name, file_name):
 
 class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
     def SendPartition(self, request, context):
+        """
+        Envía una partición
+        param request: La partición a enviar
+        return: None
+        """
         file_name = request.file_name
         partition_name = request.partition_name
         os.makedirs(file_name, exist_ok=True)
         storage_path = f"{file_name}/{partition_name}"
         with open(storage_path, "wb") as f:
             f.write(request.partition_data)
+        channel = grpc.insecure_channel("localhost:8080")
+        stub = Service_pb2_grpc.NameNodeStub(channel)
+        reponse = stub.SaveNodeFile(
+            Service_pb2.SaveNodeFileRequest(
+                file_name=file_name, url="localhost:50053", partition_name=partition_name
+            )
+        )
         if request.current_replication < 3:
             request.current_replication += 1
             url = get_replication_url(partition_name, file_name)
@@ -49,6 +61,10 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
 
 
 def send_heartbeats():
+    """
+    Envía latidos
+    return: None
+    """
     while True:
         timestamp = int(time.time())
         try:
@@ -56,7 +72,7 @@ def send_heartbeats():
             stub = Service_pb2_grpc.NameNodeStub(channel)
             stub.HeartBeat(
                 Service_pb2.HeartBeatRequest(
-                    url="localhost:50051", timestamp=timestamp
+                    url="localhost:50053", timestamp=timestamp
                 )
             )
         except Exception as e:
@@ -64,15 +80,17 @@ def send_heartbeats():
         time.sleep(10)
 
 
-# Sleep for 10 seconds before sending the next heartbeat
-
-
 def save_node_file(file_name):
+    """
+    Notifica al name node que se guardó un archivo
+    param file_name: El nombre del archivo
+    return: None
+    """
     channel = grpc.insecure_channel("localhost:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     stub.SaveNodeFile(
         Service_pb2.SaveNodeFileRequest(
-            file_name=file_name, url="localhost:50051")
+            file_name=file_name, url="localhost:50053")
     )
 
 
@@ -80,7 +98,7 @@ if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_DataNodeServicer_to_server(
         DataNodeServicer(), server)
-    server.add_insecure_port("localhost:50051")
+    server.add_insecure_port("localhost:50053")
     server.start()
     send_heartbeats_thread = Thread(target=send_heartbeats)
     send_heartbeats_thread.daemon = True

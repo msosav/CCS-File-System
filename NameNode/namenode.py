@@ -1,6 +1,7 @@
 """
 NameNode
 """
+
 from concurrent import futures
 import grpc
 import Service_pb2
@@ -27,10 +28,8 @@ def distribute_file(file_name, num_partitions, size, response):
     for i in range(num_partitions):
         if datanode_index >= len(active_datanodes):
             datanode_index = 0
-        response.partitions[partition_name(
-            i)] = active_datanodes[datanode_index]
-        datanodes[file_name] = {partition_name(
-            i): active_datanodes[datanode_index]}
+        response.partitions[partition_name(i)] = active_datanodes[datanode_index]
+        datanodes[file_name] = {partition_name(i): [active_datanodes[datanode_index]]}
         datanode_index += 1
     files[file_name] = size
     return response
@@ -96,8 +95,7 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             url = random.choice(active_datanodes)
             return Service_pb2.ReplicationUrlResponse(url=url)
         else:
-            active_urls = [
-                x for x in active_datanodes if x not in partitions_of_file]
+            active_urls = [x for x in active_datanodes if x not in partitions_of_file]
             if not active_urls:
                 return Service_pb2.ReplicationUrlResponse(url="")
             url = random.choice(active_urls)
@@ -113,6 +111,23 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             active_datanodes.append(request.url)
         heartbeats[request.url] = request.timestamp
         return Service_pb2.HeartBeatResponse(message="OK")
+
+    def SaveNodeFile(self, request, context):
+        """
+        Guardar que un data node tiene un archivo
+        param request: El archivo a guardar
+        return: None
+        """
+        file_name = request.file_name
+        partition_name = request.partition_name
+        if file_name not in datanodes:
+            datanodes[file_name] = {}
+        if partition_name not in datanodes[file_name]:
+            datanodes[file_name][partition_name] = []
+        if request.url in datanodes[file_name][partition_name]:
+            return Service_pb2.SaveNodeFileResponse(message="OK")
+        datanodes[file_name][partition_name].append(request.url)
+        return Service_pb2.SaveNodeFileResponse(message="OK")
 
 
 def file_system(option):
@@ -130,19 +145,29 @@ def file_system(option):
 def monitor_heartbeats():
     while True:
         time.sleep(15)
+        print(datanodes)
         current_time = int(time.time())
         for url, timestamp in list(heartbeats.items()):
             if current_time - timestamp > 15:
                 print(f"DataNode {url} is inactive, removing from active list")
                 active_datanodes.remove(url)
                 del heartbeats[url]
+                if not datanodes:
+                    continue
+                for file_name, partitions in datanodes.items():
+                    for partition_name, urls in partitions.items():
+                        if url in urls:
+                            datanodes[file_name][partition_name].remove(url)
+                            print(
+                                f"DataNode {url} removed from partition {partition_name} of file {file_name}"
+                            )
+
 
 
 if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    Service_pb2_grpc.add_NameNodeServicer_to_server(
-        NameNodeServicer(), server)
-    server.add_insecure_port('localhost:8080')
+    Service_pb2_grpc.add_NameNodeServicer_to_server(NameNodeServicer(), server)
+    server.add_insecure_port("localhost:8080")
     server.start()
     print("NameNode running at port 8080.")
     monitor_heartbeats_thread = Thread(target=monitor_heartbeats)

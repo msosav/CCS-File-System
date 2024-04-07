@@ -107,7 +107,7 @@ def upload_file(file_name, num_partitions, size):
     param size: El tamaño del archivo
     return: None
     """
-    channel = grpc.insecure_channel('[::]:8080')
+    channel = grpc.insecure_channel('localhost:8080')
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.Create(
         Service_pb2.CreateRequest(file_name=file_name, num_partitions=num_partitions, size=size))
