@@ -6,11 +6,14 @@ import grpc
 import Service_pb2
 import Service_pb2_grpc
 import random
+from threading import Thread
+import time
 
 # Diccionario que almacena los datanodes y los archivos que contienen
 datanodes = {}
 active_datanodes = []
 files = {}
+heartbeats = {}
 
 
 def distribute_file(file_name, num_partitions, size, response):
@@ -100,6 +103,17 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             url = random.choice(active_urls)
             return Service_pb2.ReplicationUrlResponse(url=url)
 
+    def HeartBeat(self, request, context):
+        """
+        Realiza un latido
+        param request: El latido
+        return: None
+        """
+        if request.url not in active_datanodes:
+            active_datanodes.append(request.url)
+        heartbeats[request.url] = request.timestamp
+        return Service_pb2.HeartBeatResponse(message="OK")
+
 
 def file_system(option):
     """
@@ -113,13 +127,25 @@ def file_system(option):
         return "Invalid option"
 
 
+def monitor_heartbeats():
+    while True:
+        time.sleep(15)
+        current_time = int(time.time())
+        for url, timestamp in list(heartbeats.items()):
+            if current_time - timestamp > 15:
+                print(f"DataNode {url} is inactive, removing from active list")
+                active_datanodes.remove(url)
+                del heartbeats[url]
+
+
 if __name__ == "__main__":
-    active_datanodes = ["localhost:50051", "localhost:50052",
-                        "localhost:50053", "localhost:50054"]
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_NameNodeServicer_to_server(
         NameNodeServicer(), server)
-    server.add_insecure_port('[::]:8080')
+    server.add_insecure_port('localhost:8080')
     server.start()
     print("NameNode running at port 8080.")
+    monitor_heartbeats_thread = Thread(target=monitor_heartbeats)
+    monitor_heartbeats_thread.daemon = True
+    monitor_heartbeats_thread.start()
     server.wait_for_termination()
