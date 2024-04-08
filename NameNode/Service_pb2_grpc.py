@@ -39,6 +39,11 @@ class NameNodeStub(object):
                 request_serializer=Service__pb2.HeartBeatRequest.SerializeToString,
                 response_deserializer=Service__pb2.HeartBeatResponse.FromString,
                 )
+        self.Download = channel.unary_unary(
+                '/NameNode/Download',
+                request_serializer=Service__pb2.DownloadRequest.SerializeToString,
+                response_deserializer=Service__pb2.DownloadResponse.FromString,
+                )
 
 
 class NameNodeServicer(object):
@@ -74,6 +79,12 @@ class NameNodeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Download(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NameNodeServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -101,6 +112,11 @@ def add_NameNodeServicer_to_server(servicer, server):
                     servicer.HeartBeat,
                     request_deserializer=Service__pb2.HeartBeatRequest.FromString,
                     response_serializer=Service__pb2.HeartBeatResponse.SerializeToString,
+            ),
+            'Download': grpc.unary_unary_rpc_method_handler(
+                    servicer.Download,
+                    request_deserializer=Service__pb2.DownloadRequest.FromString,
+                    response_serializer=Service__pb2.DownloadResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -197,6 +213,23 @@ class NameNode(object):
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
+    @staticmethod
+    def Download(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameNode/Download',
+            Service__pb2.DownloadRequest.SerializeToString,
+            Service__pb2.DownloadResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
 
 class DataNodeStub(object):
     """Missing associated documentation comment in .proto file."""
@@ -212,12 +245,23 @@ class DataNodeStub(object):
                 request_serializer=Service__pb2.SendPartitionRequest.SerializeToString,
                 response_deserializer=Service__pb2.SendPartitionResponse.FromString,
                 )
+        self.DownloadPartition = channel.unary_unary(
+                '/DataNode/DownloadPartition',
+                request_serializer=Service__pb2.DownloadPartitionRequest.SerializeToString,
+                response_deserializer=Service__pb2.DownloadPartitionResponse.FromString,
+                )
 
 
 class DataNodeServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def SendPartition(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DownloadPartition(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -230,6 +274,11 @@ def add_DataNodeServicer_to_server(servicer, server):
                     servicer.SendPartition,
                     request_deserializer=Service__pb2.SendPartitionRequest.FromString,
                     response_serializer=Service__pb2.SendPartitionResponse.SerializeToString,
+            ),
+            'DownloadPartition': grpc.unary_unary_rpc_method_handler(
+                    servicer.DownloadPartition,
+                    request_deserializer=Service__pb2.DownloadPartitionRequest.FromString,
+                    response_serializer=Service__pb2.DownloadPartitionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -255,5 +304,22 @@ class DataNode(object):
         return grpc.experimental.unary_unary(request, target, '/DataNode/SendPartition',
             Service__pb2.SendPartitionRequest.SerializeToString,
             Service__pb2.SendPartitionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DownloadPartition(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/DataNode/DownloadPartition',
+            Service__pb2.DownloadPartitionRequest.SerializeToString,
+            Service__pb2.DownloadPartitionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

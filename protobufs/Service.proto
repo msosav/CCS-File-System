@@ -56,6 +56,29 @@ message HeartBeatResponse{
     string message = 1;
 }
 
+message DataNodeInfo {
+    repeated string url = 1;
+}
+
+message DownloadRequest {
+    string file_name = 1;
+}
+
+message DownloadResponse {
+    map<string, DataNodeInfo> partitions = 1;
+    int32 status_code = 2;
+}
+
+message DownloadPartitionRequest {
+    string partition_name = 1;
+    string file_name = 2;
+}
+
+message DownloadPartitionResponse {
+    bytes partition_data = 1;
+    string file_name = 2;
+}
+
 
 service NameNode {
     rpc Create (CreateRequest) returns (CreateResponse) {}
@@ -63,8 +86,10 @@ service NameNode {
     rpc ReplicationUrl (ReplicationUrlRequest) returns (ReplicationUrlResponse) {}
     rpc SaveNodeFile (SaveNodeFileRequest) returns (SaveNodeFileResponse) {}
     rpc HeartBeat (HeartBeatRequest) returns (HeartBeatResponse) {}
+    rpc Download (DownloadRequest) returns (DownloadResponse) {}
 }
 
 service DataNode {
     rpc SendPartition (SendPartitionRequest) returns (SendPartitionResponse) {}
+    rpc DownloadPartition (DownloadPartitionRequest) returns (DownloadPartitionResponse) {}
 }

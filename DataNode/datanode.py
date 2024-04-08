@@ -7,15 +7,6 @@ import time
 from threading import Thread
 
 
-def get_extension(file_name):
-    """
-    Obtiene la extensión de un archivo
-    param file_name: El nombre del archivo
-    return: La extensión del archivo
-    """
-    return file_name.split(".")
-
-
 def get_replication_url(partition_name, file_name):
     """
     Realiza una solicitud a la URL
@@ -46,7 +37,7 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
         stub = Service_pb2_grpc.NameNodeStub(channel)
         reponse = stub.SaveNodeFile(
             Service_pb2.SaveNodeFileRequest(
-                file_name=file_name, url="localhost:50053", partition_name=partition_name
+                file_name=file_name, url="localhost:50051", partition_name=partition_name
             )
         )
         if request.current_replication < 3:
@@ -58,6 +49,15 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
                 stub = Service_pb2_grpc.DataNodeStub(channel)
                 stub.SendPartition(request)
         return Service_pb2.SendPartitionResponse(status_code=200)
+
+    def DownloadPartition(self, request, context):
+        file_name = request.file_name
+        partition_name = request.partition_name
+        storage_path = f"{file_name}/{partition_name}"
+        with open(storage_path, "rb") as partition:
+            data = partition.read()
+        print(data)
+        return Service_pb2.DownloadPartitionResponse(partition_data=data)
 
 
 def send_heartbeats():
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_DataNodeServicer_to_server(
         DataNodeServicer(), server)
-    server.add_insecure_port("localhost:50053")
+    server.add_insecure_port("localhost:50051")
     server.start()
     send_heartbeats_thread = Thread(target=send_heartbeats)
     send_heartbeats_thread.daemon = True
