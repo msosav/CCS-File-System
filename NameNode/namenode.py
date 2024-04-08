@@ -28,8 +28,10 @@ def distribute_file(file_name, num_partitions, size, response):
     for i in range(num_partitions):
         if datanode_index >= len(active_datanodes):
             datanode_index = 0
-        response.partitions[partition_name(i)] = active_datanodes[datanode_index]
-        datanodes[file_name] = {partition_name(i): [active_datanodes[datanode_index]]}
+        response.partitions[partition_name(
+            i)] = active_datanodes[datanode_index]
+        datanodes[file_name] = {partition_name(
+            i): [active_datanodes[datanode_index]]}
         datanode_index += 1
     files[file_name] = size
     return response
@@ -95,7 +97,8 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             url = random.choice(active_datanodes)
             return Service_pb2.ReplicationUrlResponse(url=url)
         else:
-            active_urls = [x for x in active_datanodes if x not in partitions_of_file]
+            active_urls = [
+                x for x in active_datanodes if x not in partitions_of_file]
             if not active_urls:
                 return Service_pb2.ReplicationUrlResponse(url="")
             url = random.choice(active_urls)
@@ -129,6 +132,21 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
         datanodes[file_name][partition_name].append(request.url)
         return Service_pb2.SaveNodeFileResponse(message="OK")
 
+    def Download(self, request, context):
+        """
+        Descarga un archivo
+        param request: El archivo a descargar
+        return: El archivo
+        """
+        file_name = request.file_name
+        response = Service_pb2.DownloadResponse()
+        datanodes_of_file = datanodes[file_name]
+        for partition_name, urls in datanodes_of_file.items():
+            data_node_info = Service_pb2.DataNodeInfo()
+            data_node_info.url.extend(urls)
+            response.partitions[partition_name].CopyFrom(data_node_info)
+        return response
+
 
 def file_system(option):
     """
@@ -159,9 +177,9 @@ def monitor_heartbeats():
                         if url in urls:
                             datanodes[file_name][partition_name].remove(url)
                             print(
-                                f"DataNode {url} removed from partition {partition_name} of file {file_name}"
+                                f"DataNode {url} removed from partition {
+                                    partition_name} of file {file_name}"
                             )
-
 
 
 if __name__ == "__main__":

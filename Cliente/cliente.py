@@ -126,6 +126,15 @@ def upload_file(file_name, num_partitions, size):
     shutil.rmtree("client_temp")
 
 
+def download_file(file_name):
+    channel = grpc.insecure_channel("localhost:8080")
+    stub = Service_pb2_grpc.NameNodeStub(channel)
+    response = stub.Download(
+        Service_pb2.DownloadRequest(file_name=file_name)
+    )
+    print(response)
+
+
 if __name__ == '__main__':
     while True:
         command = input()
@@ -140,3 +149,6 @@ if __name__ == '__main__':
             upload_file(file_name, num_partitions, size)
         elif instruction == 'ls':
             list_files()
+        elif instruction == 'download':
+            file_name = command_args[1]
+            download_file(file_name)

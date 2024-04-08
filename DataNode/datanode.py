@@ -46,7 +46,7 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
         stub = Service_pb2_grpc.NameNodeStub(channel)
         reponse = stub.SaveNodeFile(
             Service_pb2.SaveNodeFileRequest(
-                file_name=file_name, url="localhost:50053", partition_name=partition_name
+                file_name=file_name, url="localhost:50051", partition_name=partition_name
             )
         )
         if request.current_replication < 3:

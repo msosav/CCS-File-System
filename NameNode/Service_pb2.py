@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rService.proto\"H\n\rCreateRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0enum_partitions\x18\x02 \x01(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x05\"\x8d\x01\n\x0e\x43reateResponse\x12\x33\n\npartitions\x18\x01 \x03(\x0b\x32\x1f.CreateResponse.PartitionsEntry\x12\x13\n\x0bstatus_code\x18\x02 \x01(\x05\x1a\x31\n\x0fPartitionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"v\n\x14SendPartitionRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0epartition_name\x18\x02 \x01(\t\x12\x16\n\x0epartition_data\x18\x03 \x01(\x0c\x12\x1b\n\x13\x63urrent_replication\x18\x04 \x01(\x05\",\n\x15SendPartitionResponse\x12\x13\n\x0bstatus_code\x18\x01 \x01(\x05\"B\n\x15ReplicationUrlRequest\x12\x16\n\x0epartition_name\x18\x01 \x01(\t\x12\x11\n\tfile_name\x18\x02 \x01(\t\"%\n\x16ReplicationUrlResponse\x12\x0b\n\x03url\x18\x01 \x01(\t\"\x12\n\x10ListFilesRequest\"o\n\x11ListFilesResponse\x12,\n\x05\x66iles\x18\x01 \x03(\x0b\x32\x1d.ListFilesResponse.FilesEntry\x1a,\n\nFilesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"M\n\x13SaveNodeFileRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0epartition_name\x18\x02 \x01(\t\x12\x0b\n\x03url\x18\x03 \x01(\t\"\'\n\x14SaveNodeFileResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\"2\n\x10HeartBeatRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x11\n\ttimestamp\x18\x02 \x01(\x05\"$\n\x11HeartBeatResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2\xa7\x02\n\x08NameNode\x12+\n\x06\x43reate\x12\x0e.CreateRequest\x1a\x0f.CreateResponse\"\x00\x12\x34\n\tListFiles\x12\x11.ListFilesRequest\x1a\x12.ListFilesResponse\"\x00\x12\x43\n\x0eReplicationUrl\x12\x16.ReplicationUrlRequest\x1a\x17.ReplicationUrlResponse\"\x00\x12=\n\x0cSaveNodeFile\x12\x14.SaveNodeFileRequest\x1a\x15.SaveNodeFileResponse\"\x00\x12\x34\n\tHeartBeat\x12\x11.HeartBeatRequest\x1a\x12.HeartBeatResponse\"\x00\x32L\n\x08\x44\x61taNode\x12@\n\rSendPartition\x12\x15.SendPartitionRequest\x1a\x16.SendPartitionResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rService.proto\"H\n\rCreateRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0enum_partitions\x18\x02 \x01(\x05\x12\x0c\n\x04size\x18\x03 \x01(\x05\"\x8d\x01\n\x0e\x43reateResponse\x12\x33\n\npartitions\x18\x01 \x03(\x0b\x32\x1f.CreateResponse.PartitionsEntry\x12\x13\n\x0bstatus_code\x18\x02 \x01(\x05\x1a\x31\n\x0fPartitionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"v\n\x14SendPartitionRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0epartition_name\x18\x02 \x01(\t\x12\x16\n\x0epartition_data\x18\x03 \x01(\x0c\x12\x1b\n\x13\x63urrent_replication\x18\x04 \x01(\x05\",\n\x15SendPartitionResponse\x12\x13\n\x0bstatus_code\x18\x01 \x01(\x05\"B\n\x15ReplicationUrlRequest\x12\x16\n\x0epartition_name\x18\x01 \x01(\t\x12\x11\n\tfile_name\x18\x02 \x01(\t\"%\n\x16ReplicationUrlResponse\x12\x0b\n\x03url\x18\x01 \x01(\t\"\x12\n\x10ListFilesRequest\"o\n\x11ListFilesResponse\x12,\n\x05\x66iles\x18\x01 \x03(\x0b\x32\x1d.ListFilesResponse.FilesEntry\x1a,\n\nFilesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"M\n\x13SaveNodeFileRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\x12\x16\n\x0epartition_name\x18\x02 \x01(\t\x12\x0b\n\x03url\x18\x03 \x01(\t\"\'\n\x14SaveNodeFileResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\"2\n\x10HeartBeatRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x11\n\ttimestamp\x18\x02 \x01(\x05\"$\n\x11HeartBeatResponse\x12\x0f\n\x07message\x18\x01 \x01(\t\"\x1b\n\x0c\x44\x61taNodeInfo\x12\x0b\n\x03url\x18\x01 \x03(\t\"$\n\x0f\x44ownloadRequest\x12\x11\n\tfile_name\x18\x01 \x01(\t\"\xa0\x01\n\x10\x44ownloadResponse\x12\x35\n\npartitions\x18\x01 \x03(\x0b\x32!.DownloadResponse.PartitionsEntry\x12\x13\n\x0bstatus_code\x18\x02 \x01(\x05\x1a@\n\x0fPartitionsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x1c\n\x05value\x18\x02 \x01(\x0b\x32\r.DataNodeInfo:\x02\x38\x01\x32\xda\x02\n\x08NameNode\x12+\n\x06\x43reate\x12\x0e.CreateRequest\x1a\x0f.CreateResponse\"\x00\x12\x34\n\tListFiles\x12\x11.ListFilesRequest\x1a\x12.ListFilesResponse\"\x00\x12\x43\n\x0eReplicationUrl\x12\x16.ReplicationUrlRequest\x1a\x17.ReplicationUrlResponse\"\x00\x12=\n\x0cSaveNodeFile\x12\x14.SaveNodeFileRequest\x1a\x15.SaveNodeFileResponse\"\x00\x12\x34\n\tHeartBeat\x12\x11.HeartBeatRequest\x1a\x12.HeartBeatResponse\"\x00\x12\x31\n\x08\x44ownload\x12\x10.DownloadRequest\x1a\x11.DownloadResponse\"\x00\x32L\n\x08\x44\x61taNode\x12@\n\rSendPartition\x12\x15.SendPartitionRequest\x1a\x16.SendPartitionResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -25,6 +25,8 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_CREATERESPONSE_PARTITIONSENTRY']._serialized_options = b'8\001'
   _globals['_LISTFILESRESPONSE_FILESENTRY']._options = None
   _globals['_LISTFILESRESPONSE_FILESENTRY']._serialized_options = b'8\001'
+  _globals['_DOWNLOADRESPONSE_PARTITIONSENTRY']._options = None
+  _globals['_DOWNLOADRESPONSE_PARTITIONSENTRY']._serialized_options = b'8\001'
   _globals['_CREATEREQUEST']._serialized_start=17
   _globals['_CREATEREQUEST']._serialized_end=89
   _globals['_CREATERESPONSE']._serialized_start=92
@@ -53,8 +55,16 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_HEARTBEATREQUEST']._serialized_end=811
   _globals['_HEARTBEATRESPONSE']._serialized_start=813
   _globals['_HEARTBEATRESPONSE']._serialized_end=849
-  _globals['_NAMENODE']._serialized_start=852
-  _globals['_NAMENODE']._serialized_end=1147
-  _globals['_DATANODE']._serialized_start=1149
-  _globals['_DATANODE']._serialized_end=1225
+  _globals['_DATANODEINFO']._serialized_start=851
+  _globals['_DATANODEINFO']._serialized_end=878
+  _globals['_DOWNLOADREQUEST']._serialized_start=880
+  _globals['_DOWNLOADREQUEST']._serialized_end=916
+  _globals['_DOWNLOADRESPONSE']._serialized_start=919
+  _globals['_DOWNLOADRESPONSE']._serialized_end=1079
+  _globals['_DOWNLOADRESPONSE_PARTITIONSENTRY']._serialized_start=1015
+  _globals['_DOWNLOADRESPONSE_PARTITIONSENTRY']._serialized_end=1079
+  _globals['_NAMENODE']._serialized_start=1082
+  _globals['_NAMENODE']._serialized_end=1428
+  _globals['_DATANODE']._serialized_start=1430
+  _globals['_DATANODE']._serialized_end=1506
 # @@protoc_insertion_point(module_scope)
