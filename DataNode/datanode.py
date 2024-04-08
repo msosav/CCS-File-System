@@ -58,6 +58,21 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
             data = partition.read()
         print(data)
         return Service_pb2.DownloadPartitionResponse(partition_data=data)
+    
+    def Replicate(self, request, context):
+        file_name = request.file_name
+        partition_name = request.partition_name
+        url = request.url
+        file_path = os.path.join(file_name, partition_name)
+        with open(file_path, 'rb') as file:
+            partition_data = file.read()
+        with grpc.insecure_channel(url) as channel:
+                stub = Service_pb2_grpc.DataNodeStub(channel)
+                stub.SendPartition(Service_pb2.SendPartitionRequest(
+                    file_name=file_name, partition_name=partition_name, partition_data=partition_data, current_replication=3
+                ))
+        return Service_pb2.ReplicateResponse(status_code=200)
+        
 
 
 def send_heartbeats():
@@ -72,7 +87,7 @@ def send_heartbeats():
             stub = Service_pb2_grpc.NameNodeStub(channel)
             stub.HeartBeat(
                 Service_pb2.HeartBeatRequest(
-                    url="localhost:50053", timestamp=timestamp
+                    url="localhost:50051", timestamp=timestamp
                 )
             )
         except Exception as e:
@@ -90,7 +105,7 @@ def save_node_file(file_name):
     stub = Service_pb2_grpc.NameNodeStub(channel)
     stub.SaveNodeFile(
         Service_pb2.SaveNodeFileRequest(
-            file_name=file_name, url="localhost:50053")
+            file_name=file_name, url="localhost:50051")
     )
 
 

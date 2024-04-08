@@ -151,3 +151,19 @@ class DownloadPartitionResponse(_message.Message):
     partition_data: bytes
     file_name: str
     def __init__(self, partition_data: _Optional[bytes] = ..., file_name: _Optional[str] = ...) -> None: ...
+
+class ReplicateRequest(_message.Message):
+    __slots__ = ("file_name", "partition_name", "url")
+    FILE_NAME_FIELD_NUMBER: _ClassVar[int]
+    PARTITION_NAME_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
+    file_name: str
+    partition_name: str
+    url: str
+    def __init__(self, file_name: _Optional[str] = ..., partition_name: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...
+
+class ReplicateResponse(_message.Message):
+    __slots__ = ("status_code",)
+    STATUS_CODE_FIELD_NUMBER: _ClassVar[int]
+    status_code: int
+    def __init__(self, status_code: _Optional[int] = ...) -> None: ...

@@ -102,7 +102,7 @@ def upload_file(file_name, num_partitions, size):
         with open(partition_path, 'rb') as partition:
             data = partition.read()
             request = Service_pb2.SendPartitionRequest(
-                file_name=file_name, partition_name=partition_name, partition_data=data, current_replication=0)
+                file_name=file_name, partition_name=partition_name, partition_data=data, current_replication=1)
             with grpc.insecure_channel(datanode) as channel:
                 stub = Service_pb2_grpc.DataNodeStub(channel)
                 response = stub.SendPartition(request)

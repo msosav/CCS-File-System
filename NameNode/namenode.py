@@ -157,6 +157,30 @@ def monitor_heartbeats():
                                 f"DataNode {url} removed from partition {
                                     partition_name} of file {file_name}"
                             )
+        if not datanodes:
+            continue
+        for file_name, partitions in datanodes.items():
+            if not file_name or not partitions:
+                continue
+            for partition_name, urls in partitions.items():
+                if not partition_name or not urls:
+                    continue
+                if len(urls) < 3:
+                    missing_urls = [url for url in active_datanodes if url not in urls]
+                    if missing_urls:
+                        urlWithFile = random.choice(urls)
+                        url = random.choice(missing_urls)
+                        print("holaaaaaaaa")
+                        with grpc.insecure_channel(urlWithFile) as channel:
+                            stub = Service_pb2_grpc.DataNodeStub(channel)
+                            stub.Replicate(
+                                Service_pb2.ReplicateRequest(
+                                    file_name=file_name,
+                                    partition_name=partition_name,
+                                    url=url,
+                                )
+                            )
+                
 
 
 if __name__ == "__main__":

@@ -250,6 +250,11 @@ class DataNodeStub(object):
                 request_serializer=Service__pb2.DownloadPartitionRequest.SerializeToString,
                 response_deserializer=Service__pb2.DownloadPartitionResponse.FromString,
                 )
+        self.Replicate = channel.unary_unary(
+                '/DataNode/Replicate',
+                request_serializer=Service__pb2.ReplicateRequest.SerializeToString,
+                response_deserializer=Service__pb2.ReplicateResponse.FromString,
+                )
 
 
 class DataNodeServicer(object):
@@ -267,6 +272,12 @@ class DataNodeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Replicate(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DataNodeServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -279,6 +290,11 @@ def add_DataNodeServicer_to_server(servicer, server):
                     servicer.DownloadPartition,
                     request_deserializer=Service__pb2.DownloadPartitionRequest.FromString,
                     response_serializer=Service__pb2.DownloadPartitionResponse.SerializeToString,
+            ),
+            'Replicate': grpc.unary_unary_rpc_method_handler(
+                    servicer.Replicate,
+                    request_deserializer=Service__pb2.ReplicateRequest.FromString,
+                    response_serializer=Service__pb2.ReplicateResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -321,5 +337,22 @@ class DataNode(object):
         return grpc.experimental.unary_unary(request, target, '/DataNode/DownloadPartition',
             Service__pb2.DownloadPartitionRequest.SerializeToString,
             Service__pb2.DownloadPartitionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Replicate(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/DataNode/Replicate',
+            Service__pb2.ReplicateRequest.SerializeToString,
+            Service__pb2.ReplicateResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
