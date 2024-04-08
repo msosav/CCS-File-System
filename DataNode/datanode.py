@@ -7,15 +7,6 @@ import time
 from threading import Thread
 
 
-def get_extension(file_name):
-    """
-    Obtiene la extensión de un archivo
-    param file_name: El nombre del archivo
-    return: La extensión del archivo
-    """
-    return file_name.split(".")
-
-
 def get_replication_url(partition_name, file_name):
     """
     Realiza una solicitud a la URL

@@ -84,16 +84,6 @@ def join_files(file_name, path, num_partitions=10000):
                 output.write(partition.read())
 
 
-def read_file(file):
-    """
-    Lee un archivo
-    param file: El archivo a leer
-    return: None
-    """
-    with open(file, 'rb') as file:
-        print(file.read())
-
-
 def upload_file(file_name, num_partitions, size):
     """
     Sube un archivo

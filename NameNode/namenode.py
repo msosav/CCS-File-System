@@ -49,17 +49,6 @@ def partition_name(i):
     return name
 
 
-def locate_file(file_name):
-    """
-    Localiza un archivo
-    param file_name: El nombre del archivo
-    return: La lista de ubicaciones del archivo
-    """
-    if file_name not in datanodes:
-        return []
-    return datanodes[file_name]
-
-
 class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
     def Create(self, request, context):
         """
@@ -146,18 +135,6 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             data_node_info.url.extend(urls)
             response.partitions[partition_name].CopyFrom(data_node_info)
         return response
-
-
-def file_system(option):
-    """
-    Muestra el sistema de archivos
-    param option: La opción a mostrar
-    return: None
-    """
-    if option == "ls":
-        return files
-    else:
-        return "Invalid option"
 
 
 def monitor_heartbeats():
