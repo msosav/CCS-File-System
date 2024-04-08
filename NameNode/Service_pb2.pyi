@@ -135,3 +135,19 @@ class DownloadResponse(_message.Message):
     partitions: _containers.MessageMap[str, DataNodeInfo]
     status_code: int
     def __init__(self, partitions: _Optional[_Mapping[str, DataNodeInfo]] = ..., status_code: _Optional[int] = ...) -> None: ...
+
+class DownloadPartitionRequest(_message.Message):
+    __slots__ = ("partition_name", "file_name")
+    PARTITION_NAME_FIELD_NUMBER: _ClassVar[int]
+    FILE_NAME_FIELD_NUMBER: _ClassVar[int]
+    partition_name: str
+    file_name: str
+    def __init__(self, partition_name: _Optional[str] = ..., file_name: _Optional[str] = ...) -> None: ...
+
+class DownloadPartitionResponse(_message.Message):
+    __slots__ = ("partition_data", "file_name")
+    PARTITION_DATA_FIELD_NUMBER: _ClassVar[int]
+    FILE_NAME_FIELD_NUMBER: _ClassVar[int]
+    partition_data: bytes
+    file_name: str
+    def __init__(self, partition_data: _Optional[bytes] = ..., file_name: _Optional[str] = ...) -> None: ...

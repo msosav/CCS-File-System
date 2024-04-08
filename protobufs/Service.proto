@@ -69,6 +69,16 @@ message DownloadResponse {
     int32 status_code = 2;
 }
 
+message DownloadPartitionRequest {
+    string partition_name = 1;
+    string file_name = 2;
+}
+
+message DownloadPartitionResponse {
+    bytes partition_data = 1;
+    string file_name = 2;
+}
+
 
 service NameNode {
     rpc Create (CreateRequest) returns (CreateResponse) {}
@@ -81,4 +91,5 @@ service NameNode {
 
 service DataNode {
     rpc SendPartition (SendPartitionRequest) returns (SendPartitionResponse) {}
+    rpc DownloadPartition (DownloadPartitionRequest) returns (DownloadPartitionResponse) {}
 }

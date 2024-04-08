@@ -59,6 +59,15 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
                 stub.SendPartition(request)
         return Service_pb2.SendPartitionResponse(status_code=200)
 
+    def DownloadPartition(self, request, context):
+        file_name = request.file_name
+        partition_name = request.partition_name
+        storage_path = f"{file_name}/{partition_name}"
+        with open(storage_path, "rb") as partition:
+            data = partition.read()
+        print(data)
+        return Service_pb2.DownloadPartitionResponse(partition_data=data)
+
 
 def send_heartbeats():
     """
@@ -98,7 +107,7 @@ if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_DataNodeServicer_to_server(
         DataNodeServicer(), server)
-    server.add_insecure_port("localhost:50053")
+    server.add_insecure_port("localhost:50051")
     server.start()
     send_heartbeats_thread = Thread(target=send_heartbeats)
     send_heartbeats_thread.daemon = True
