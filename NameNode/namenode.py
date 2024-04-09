@@ -17,7 +17,7 @@ files = {}
 heartbeats = {}
 
 
-def distribute_file(file_name, num_partitions, size, response):
+def distribute_file(file_name, num_partitions, size, response, start_from=0):
     """
     Distribuye un archivo en los datanodes
     param file_name: El nombre del archivo
@@ -25,17 +25,17 @@ def distribute_file(file_name, num_partitions, size, response):
     return: El diccionario de datanodes
     """
     datanode_index = 0
-    for i in range(num_partitions):
+    for i in range(start_from, num_partitions):
         if datanode_index >= len(active_datanodes):
             datanode_index = 0
-        response.partitions[partition_name(
-            i)] = active_datanodes[datanode_index]
-        datanodes[file_name] = {partition_name(
-            i): [active_datanodes[datanode_index]]}
+        response.partitions[partition_name(i)] = active_datanodes[datanode_index]
+        if file_name not in datanodes:
+            datanodes[file_name] = {}
+        datanodes[file_name][partition_name(i)] = [active_datanodes[datanode_index]]
         datanode_index += 1
+    print(datanodes)
     files[file_name] = size
     return response
-
 
 def partition_name(i):
     """
@@ -59,8 +59,16 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
         file_name = request.file_name
         num_partitions = request.num_partitions
         size = request.size
+        last_partition_urls = []
         response = Service_pb2.CreateResponse()
-        response = distribute_file(file_name, num_partitions, size, response)
+        if file_name in files:
+            last_num_partitions = len(datanodes[file_name].keys())
+            last_partition_urls = datanodes[file_name][partition_name(last_num_partitions - 1)]
+            distribute_file(file_name, num_partitions, size, response, last_num_partitions - 1)
+            response.last_partition_urls.extend(last_partition_urls)
+        else:
+            distribute_file(file_name, num_partitions, size, response)
+        response.status_code = 200
         return response
 
     def ListFiles(self, request, context):
@@ -135,9 +143,24 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             data_node_info.url.extend(urls)
             response.partitions[partition_name].CopyFrom(data_node_info)
         return response
-
-
-def monitor_heartbeats():
+    
+    def DeleteNodeFile(self, request, context):
+        """
+        Elimina un archivo
+        param request: El archivo a eliminar
+        return: None
+        """
+        file_name = request.file_name
+        partition_name = request.partition_name
+        if file_name not in datanodes:
+            return Service_pb2.DeleteNodeFileResponse(message="OK")
+        if partition_name not in datanodes[file_name]:
+            return Service_pb2.DeleteNodeFileResponse(message="OK")
+        datanodes[file_name][partition_name].remove(request.url)
+        return Service_pb2.DeleteNodeFileResponse(message="OK")
+        
+    
+def monitor_heartbeats_and_replication():
     while True:
         time.sleep(15)
         print(datanodes)
@@ -170,7 +193,6 @@ def monitor_heartbeats():
                     if missing_urls:
                         urlWithFile = random.choice(urls)
                         url = random.choice(missing_urls)
-                        print("holaaaaaaaa")
                         with grpc.insecure_channel(urlWithFile) as channel:
                             stub = Service_pb2_grpc.DataNodeStub(channel)
                             stub.Replicate(
@@ -189,7 +211,7 @@ if __name__ == "__main__":
     server.add_insecure_port("localhost:8080")
     server.start()
     print("NameNode running at port 8080.")
-    monitor_heartbeats_thread = Thread(target=monitor_heartbeats)
+    monitor_heartbeats_thread = Thread(target=monitor_heartbeats_and_replication)
     monitor_heartbeats_thread.daemon = True
     monitor_heartbeats_thread.start()
     server.wait_for_termination()

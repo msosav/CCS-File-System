@@ -14,7 +14,7 @@ def list_files():
     Lista los archivos
     return: None
     """
-    channel = grpc.insecure_channel('localhost:8080')
+    channel = grpc.insecure_channel("localhost:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.ListFiles(Service_pb2.ListFilesRequest())
     files = response.files
@@ -37,19 +37,18 @@ def partition_file(file_name):
     path = os.path.join(temp, file_name)
     os.makedirs(path, exist_ok=True)
 
-    with open(file_name, 'r') as file:
+    with open(file_name, "r") as file:
         content = file.read()
 
     num_partitions = (len(content) + partition_size - 1) // partition_size
 
     for i in range(num_partitions):
-        partition_content = content[i *
-                                    partition_size: (i + 1) * partition_size]
+        partition_content = content[i * partition_size : (i + 1) * partition_size]
         output_file = f"{path}/{partition_name(i)}"
-        with open(output_file, 'w') as file:
+        with open(output_file, "w") as file:
             file.write(partition_content)
 
-    return num_partitions
+    return num_partitions 
 
 
 def partition_name(i):
@@ -59,7 +58,7 @@ def partition_name(i):
     return: El nombre de la partición
     """
     length = len(str(i))
-    serial = '0' * (4 - length) + str(i)
+    serial = "0" * (4 - length) + str(i)
     name = f"part-{serial}"
     return name
 
@@ -75,12 +74,12 @@ def join_files(file_name, path, num_partitions=10000):
         raise FileNotFoundError(f"Directory '{file_name}' not found.")
     os.makedirs("Storage", exist_ok=True)
     output_file = f"Storage/{file_name}"
-    with open(output_file, 'w') as output:
+    with open(output_file, "w") as output:
         for i in range(num_partitions):
             partition_file = f"{path}/{partition_name(i)}"
             if not os.path.isfile(partition_file):
                 break
-            with open(partition_file, 'r') as partition:
+            with open(partition_file, "r") as partition:
                 output.write(partition.read())
 
 
@@ -92,17 +91,37 @@ def upload_file(file_name, num_partitions, size):
     param size: El tamaño del archivo
     return: None
     """
-    channel = grpc.insecure_channel('localhost:8080')
+    channel = grpc.insecure_channel("localhost:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.Create(
-        Service_pb2.CreateRequest(file_name=file_name, num_partitions=num_partitions, size=size))
+        Service_pb2.CreateRequest(
+            file_name=file_name, num_partitions=num_partitions, size=size
+        )
+    )
+    last_partition_urls = response.last_partition_urls
     partitions = response.partitions  # key: partition_name, value: datanode
+    print(partitions)
+    if not partitions.get("part-0000"):
+        first_key = list(partitions.keys())[0]
+        for i in range(len(last_partition_urls)):
+            channel = grpc.insecure_channel(last_partition_urls[i])
+            stub = Service_pb2_grpc.DataNodeStub(channel)
+            stub.DeletePartition(
+                Service_pb2.DeletePartitionRequest(
+                    file_name=file_name, partition_name=first_key
+                )
+            )
+
     for partition_name, datanode in partitions.items():
         partition_path = f"client_temp/{file_name}/{partition_name}"
-        with open(partition_path, 'rb') as partition:
+        with open(partition_path, "rb") as partition:
             data = partition.read()
             request = Service_pb2.SendPartitionRequest(
-                file_name=file_name, partition_name=partition_name, partition_data=data, current_replication=1)
+                file_name=file_name,
+                partition_name=partition_name,
+                partition_data=data,
+                current_replication=1,
+            )
             with grpc.insecure_channel(datanode) as channel:
                 stub = Service_pb2_grpc.DataNodeStub(channel)
                 response = stub.SendPartition(request)
@@ -112,9 +131,7 @@ def upload_file(file_name, num_partitions, size):
 def download_file(file_name):
     channel = grpc.insecure_channel("localhost:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
-    response = stub.Download(
-        Service_pb2.DownloadRequest(file_name=file_name)
-    )
+    response = stub.Download(Service_pb2.DownloadRequest(file_name=file_name))
     partitions = response.partitions
     file_temp_path = f"client_temp/{file_name}"
     os.makedirs(file_temp_path, exist_ok=True)
@@ -132,21 +149,21 @@ def download_file(file_name):
     shutil.rmtree("client_temp")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     while True:
         command = input()
         command_args = command.split(" ")
         instruction = command_args[0]
-        if instruction == 'exit':
+        if instruction == "exit":
             break
-        elif instruction == 'upload':
+        elif instruction == "upload":
             file_name = command_args[1]
             num_partitions = partition_file(file_name)
             size = os.path.getsize(file_name)
             upload_file(file_name, num_partitions, size)
-        elif instruction == 'ls':
+        elif instruction == "ls":
             list_files()
-        elif instruction == 'download':
+        elif instruction == "download":
             file_name = command_args[1]
             download_file(file_name)
             print(f"File {file_name} downloaded to Storage folder")

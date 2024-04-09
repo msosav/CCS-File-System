@@ -34,6 +34,11 @@ class NameNodeStub(object):
                 request_serializer=Service__pb2.SaveNodeFileRequest.SerializeToString,
                 response_deserializer=Service__pb2.SaveNodeFileResponse.FromString,
                 )
+        self.DeleteNodeFile = channel.unary_unary(
+                '/NameNode/DeleteNodeFile',
+                request_serializer=Service__pb2.DeleteNodeFileRequest.SerializeToString,
+                response_deserializer=Service__pb2.DeleteNodeFileResponse.FromString,
+                )
         self.HeartBeat = channel.unary_unary(
                 '/NameNode/HeartBeat',
                 request_serializer=Service__pb2.HeartBeatRequest.SerializeToString,
@@ -73,6 +78,12 @@ class NameNodeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def DeleteNodeFile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def HeartBeat(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -107,6 +118,11 @@ def add_NameNodeServicer_to_server(servicer, server):
                     servicer.SaveNodeFile,
                     request_deserializer=Service__pb2.SaveNodeFileRequest.FromString,
                     response_serializer=Service__pb2.SaveNodeFileResponse.SerializeToString,
+            ),
+            'DeleteNodeFile': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteNodeFile,
+                    request_deserializer=Service__pb2.DeleteNodeFileRequest.FromString,
+                    response_serializer=Service__pb2.DeleteNodeFileResponse.SerializeToString,
             ),
             'HeartBeat': grpc.unary_unary_rpc_method_handler(
                     servicer.HeartBeat,
@@ -197,6 +213,23 @@ class NameNode(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
+    def DeleteNodeFile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/NameNode/DeleteNodeFile',
+            Service__pb2.DeleteNodeFileRequest.SerializeToString,
+            Service__pb2.DeleteNodeFileResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
     def HeartBeat(request,
             target,
             options=(),
@@ -255,6 +288,11 @@ class DataNodeStub(object):
                 request_serializer=Service__pb2.ReplicateRequest.SerializeToString,
                 response_deserializer=Service__pb2.ReplicateResponse.FromString,
                 )
+        self.DeletePartition = channel.unary_unary(
+                '/DataNode/DeletePartition',
+                request_serializer=Service__pb2.DeletePartitionRequest.SerializeToString,
+                response_deserializer=Service__pb2.DeletePartitionResponse.FromString,
+                )
 
 
 class DataNodeServicer(object):
@@ -278,6 +316,12 @@ class DataNodeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def DeletePartition(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DataNodeServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -295,6 +339,11 @@ def add_DataNodeServicer_to_server(servicer, server):
                     servicer.Replicate,
                     request_deserializer=Service__pb2.ReplicateRequest.FromString,
                     response_serializer=Service__pb2.ReplicateResponse.SerializeToString,
+            ),
+            'DeletePartition': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeletePartition,
+                    request_deserializer=Service__pb2.DeletePartitionRequest.FromString,
+                    response_serializer=Service__pb2.DeletePartitionResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -354,5 +403,22 @@ class DataNode(object):
         return grpc.experimental.unary_unary(request, target, '/DataNode/Replicate',
             Service__pb2.ReplicateRequest.SerializeToString,
             Service__pb2.ReplicateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeletePartition(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/DataNode/DeletePartition',
+            Service__pb2.DeletePartitionRequest.SerializeToString,
+            Service__pb2.DeletePartitionResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

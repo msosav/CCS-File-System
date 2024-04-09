@@ -8,7 +8,8 @@ message CreateRequest {
 
 message CreateResponse {
     map<string, string> partitions = 1;
-    int32 status_code = 2;
+    repeated string last_partition_urls = 2;
+    int32 status_code = 3;
 }
 
 message SendPartitionRequest {
@@ -89,12 +90,32 @@ message ReplicateResponse {
     int32 status_code = 1;
 }
 
+message DeletePartitionRequest {
+    string partition_name = 1;
+    string file_name = 2;
+}
+
+message DeletePartitionResponse {
+    int32 status_code = 1;
+}
+
+message DeleteNodeFileRequest {
+    string file_name = 1;
+    string partition_name = 2;
+    string url = 3;
+}
+
+message DeleteNodeFileResponse {
+    string message = 1;
+}
+
 
 service NameNode {
     rpc Create (CreateRequest) returns (CreateResponse) {}
     rpc ListFiles (ListFilesRequest) returns (ListFilesResponse) {};
     rpc ReplicationUrl (ReplicationUrlRequest) returns (ReplicationUrlResponse) {}
     rpc SaveNodeFile (SaveNodeFileRequest) returns (SaveNodeFileResponse) {}
+    rpc DeleteNodeFile (DeleteNodeFileRequest) returns (DeleteNodeFileResponse) {}
     rpc HeartBeat (HeartBeatRequest) returns (HeartBeatResponse) {}
     rpc Download (DownloadRequest) returns (DownloadResponse) {}
 }
@@ -103,4 +124,5 @@ service DataNode {
     rpc SendPartition (SendPartitionRequest) returns (SendPartitionResponse) {}
     rpc DownloadPartition (DownloadPartitionRequest) returns (DownloadPartitionResponse) {}
     rpc Replicate (ReplicateRequest) returns (ReplicateResponse) {}
+    rpc DeletePartition (DeletePartitionRequest) returns (DeletePartitionResponse) {}
 }

@@ -16,7 +16,7 @@ class CreateRequest(_message.Message):
     def __init__(self, file_name: _Optional[str] = ..., num_partitions: _Optional[int] = ..., size: _Optional[int] = ...) -> None: ...
 
 class CreateResponse(_message.Message):
-    __slots__ = ("partitions", "status_code")
+    __slots__ = ("partitions", "last_partition_urls", "status_code")
     class PartitionsEntry(_message.Message):
         __slots__ = ("key", "value")
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -25,10 +25,12 @@ class CreateResponse(_message.Message):
         value: str
         def __init__(self, key: _Optional[str] = ..., value: _Optional[str] = ...) -> None: ...
     PARTITIONS_FIELD_NUMBER: _ClassVar[int]
+    LAST_PARTITION_URLS_FIELD_NUMBER: _ClassVar[int]
     STATUS_CODE_FIELD_NUMBER: _ClassVar[int]
     partitions: _containers.ScalarMap[str, str]
+    last_partition_urls: _containers.RepeatedScalarFieldContainer[str]
     status_code: int
-    def __init__(self, partitions: _Optional[_Mapping[str, str]] = ..., status_code: _Optional[int] = ...) -> None: ...
+    def __init__(self, partitions: _Optional[_Mapping[str, str]] = ..., last_partition_urls: _Optional[_Iterable[str]] = ..., status_code: _Optional[int] = ...) -> None: ...
 
 class SendPartitionRequest(_message.Message):
     __slots__ = ("file_name", "partition_name", "partition_data", "current_replication")
@@ -167,3 +169,33 @@ class ReplicateResponse(_message.Message):
     STATUS_CODE_FIELD_NUMBER: _ClassVar[int]
     status_code: int
     def __init__(self, status_code: _Optional[int] = ...) -> None: ...
+
+class DeletePartitionRequest(_message.Message):
+    __slots__ = ("partition_name", "file_name")
+    PARTITION_NAME_FIELD_NUMBER: _ClassVar[int]
+    FILE_NAME_FIELD_NUMBER: _ClassVar[int]
+    partition_name: str
+    file_name: str
+    def __init__(self, partition_name: _Optional[str] = ..., file_name: _Optional[str] = ...) -> None: ...
+
+class DeletePartitionResponse(_message.Message):
+    __slots__ = ("status_code",)
+    STATUS_CODE_FIELD_NUMBER: _ClassVar[int]
+    status_code: int
+    def __init__(self, status_code: _Optional[int] = ...) -> None: ...
+
+class DeleteNodeFileRequest(_message.Message):
+    __slots__ = ("file_name", "partition_name", "url")
+    FILE_NAME_FIELD_NUMBER: _ClassVar[int]
+    PARTITION_NAME_FIELD_NUMBER: _ClassVar[int]
+    URL_FIELD_NUMBER: _ClassVar[int]
+    file_name: str
+    partition_name: str
+    url: str
+    def __init__(self, file_name: _Optional[str] = ..., partition_name: _Optional[str] = ..., url: _Optional[str] = ...) -> None: ...
+
+class DeleteNodeFileResponse(_message.Message):
+    __slots__ = ("message",)
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    message: str
+    def __init__(self, message: _Optional[str] = ...) -> None: ...

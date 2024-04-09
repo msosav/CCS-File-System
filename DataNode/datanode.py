@@ -72,6 +72,25 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
                     file_name=file_name, partition_name=partition_name, partition_data=partition_data, current_replication=3
                 ))
         return Service_pb2.ReplicateResponse(status_code=200)
+    
+    def DeletePartition(self, request, context):
+        """
+        Elimina una partición
+        param request: La partición a eliminar
+        return: None
+        """
+        file_name = request.file_name
+        partition_name = request.partition_name
+        storage_path = f"{file_name}/{partition_name}"
+        os.remove(storage_path)
+        channel = grpc.insecure_channel("localhost:8080")
+        stub = Service_pb2_grpc.NameNodeStub(channel)
+        reponse = stub.DeleteNodeFile(
+            Service_pb2.DeleteNodeFileRequest(
+                file_name=file_name, url="localhost:50051", partition_name=partition_name, 
+            )
+        )
+        return Service_pb2.DeletePartitionResponse(status_code=200)
         
 
 
