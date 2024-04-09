@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 grpcio-tools = "*"
 grpcio = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

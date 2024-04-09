@@ -8,19 +8,25 @@ import Service_pb2_grpc
 import grpc
 import shutil
 
+import dotenv
+
+dotenv.load_dotenv()
+
+SERVER_URL = os.getenv("SERVER_URL")
+
 
 def list_files():
     """
     Lista los archivos
     return: None
     """
-    channel = grpc.insecure_channel("localhost:8080")
+    channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.ListFiles(Service_pb2.ListFilesRequest())
     files = response.files
     alphabetically = sorted(files.keys())
     for file in alphabetically:
-        print(f"{file} - {files[file]} MB")
+        print(f"{file} - {files[file]} KB")
 
 
 def partition_file(file_name):
@@ -43,12 +49,13 @@ def partition_file(file_name):
     num_partitions = (len(content) + partition_size - 1) // partition_size
 
     for i in range(num_partitions):
-        partition_content = content[i * partition_size : (i + 1) * partition_size]
+        partition_content = content[i *
+                                    partition_size: (i + 1) * partition_size]
         output_file = f"{path}/{partition_name(i)}"
         with open(output_file, "w") as file:
             file.write(partition_content)
 
-    return num_partitions 
+    return num_partitions
 
 
 def partition_name(i):
@@ -91,7 +98,7 @@ def upload_file(file_name, num_partitions, size):
     param size: El tamaño del archivo
     return: None
     """
-    channel = grpc.insecure_channel("localhost:8080")
+    channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.Create(
         Service_pb2.CreateRequest(
@@ -133,7 +140,7 @@ def upload_file(file_name, num_partitions, size):
 
 
 def download_file(file_name):
-    channel = grpc.insecure_channel("localhost:8080")
+    channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.Download(Service_pb2.DownloadRequest(file_name=file_name))
     partitions = response.partitions

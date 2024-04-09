@@ -6,6 +6,13 @@ import os
 import time
 from threading import Thread
 
+import dotenv
+
+dotenv.load_dotenv()
+
+SERVER_URL = os.getenv("SERVER_URL")
+SELF_IP = os.getenv("SELF_IP")
+
 
 def get_replication_url(partition_name, file_name):
     """
@@ -13,7 +20,7 @@ def get_replication_url(partition_name, file_name):
     param partition_name: El nombre de la partición
     return: None
     """
-    channel = grpc.insecure_channel("localhost:8080")
+    channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.ReplicationUrl(
         Service_pb2.ReplicationUrlRequest(
@@ -36,12 +43,12 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
         storage_path = f"{file_name}/{partition_name}"
         with open(storage_path, "wb") as f:
             f.write(request.partition_data)
-        channel = grpc.insecure_channel("localhost:8080")
+        channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
         stub = Service_pb2_grpc.NameNodeStub(channel)
         reponse = stub.SaveNodeFile(
             Service_pb2.SaveNodeFileRequest(
                 file_name=file_name,
-                url="localhost:50051",
+                url=f"{SELF_IP}:50051",
                 partition_name=partition_name,
             )
         )
@@ -62,7 +69,6 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
         with open(storage_path, "rb") as partition:
             data = partition.read()
         return Service_pb2.DownloadPartitionResponse(partition_data=data)
-
 
     def Replicate(self, request, context):
         file_name = request.file_name
@@ -94,10 +100,11 @@ def send_heartbeats():
     while True:
         timestamp = int(time.time())
         try:
-            channel = grpc.insecure_channel("localhost:8080")
+            channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
             stub = Service_pb2_grpc.NameNodeStub(channel)
             stub.HeartBeat(
-                Service_pb2.HeartBeatRequest(url="localhost:50051", timestamp=timestamp)
+                Service_pb2.HeartBeatRequest(
+                    url=f"{SELF_IP}:50051", timestamp=timestamp)
             )
         except Exception as e:
             print(e)
@@ -110,17 +117,18 @@ def save_node_file(file_name):
     param file_name: El nombre del archivo
     return: None
     """
-    channel = grpc.insecure_channel("localhost:8080")
+    channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     stub.SaveNodeFile(
-        Service_pb2.SaveNodeFileRequest(file_name=file_name, url="localhost:50051")
+        Service_pb2.SaveNodeFileRequest(
+            file_name=file_name, url=f"{SELF_IP}:50051")
     )
 
 
 if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_DataNodeServicer_to_server(DataNodeServicer(), server)
-    server.add_insecure_port("localhost:50051")
+    server.add_insecure_port(f"{SELF_IP}:50051")
     server.start()
     send_heartbeats_thread = Thread(target=send_heartbeats)
     send_heartbeats_thread.daemon = True
