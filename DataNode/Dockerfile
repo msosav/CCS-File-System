@@ -10,3 +10,7 @@ RUN pipenv install --deploy --ignore-pipfile
 
 ARG SERVER_URL
 ENV SERVER_URL $SERVER_URL
+
+EXPOSE 50051
+
+CMD [ "pipenv", "run", "python", "namenode.py" ]
