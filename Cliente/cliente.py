@@ -100,18 +100,22 @@ def upload_file(file_name, num_partitions, size):
     )
     last_partition_urls = response.last_partition_urls
     partitions = response.partitions  # key: partition_name, value: datanode
-    print(partitions)
     if not partitions.get("part-0000"):
-        first_key = list(partitions.keys())[0]
+        first_key = sorted(partitions.keys())[0]
+        del partitions[first_key]
         for i in range(len(last_partition_urls)):
-            channel = grpc.insecure_channel(last_partition_urls[i])
-            stub = Service_pb2_grpc.DataNodeStub(channel)
-            stub.DeletePartition(
-                Service_pb2.DeletePartitionRequest(
-                    file_name=file_name, partition_name=first_key
+            partition_path = f"client_temp/{file_name}/{first_key}"
+            with open(partition_path, "rb") as partition:
+                data = partition.read()
+                request = Service_pb2.SendPartitionRequest(
+                    file_name=file_name,
+                    partition_name=first_key,
+                    partition_data=data,
+                    current_replication=3,
                 )
-            )
-
+                with grpc.insecure_channel(last_partition_urls[i]) as channel:
+                    stub = Service_pb2_grpc.DataNodeStub(channel)
+                    response = stub.SendPartition(request)
     for partition_name, datanode in partitions.items():
         partition_path = f"client_temp/{file_name}/{partition_name}"
         with open(partition_path, "rb") as partition:
@@ -161,6 +165,7 @@ if __name__ == "__main__":
             num_partitions = partition_file(file_name)
             size = os.path.getsize(file_name)
             upload_file(file_name, num_partitions, size)
+            print(f"File {file_name} uploaded successfully")
         elif instruction == "ls":
             list_files()
         elif instruction == "download":

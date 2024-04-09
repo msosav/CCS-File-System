@@ -33,7 +33,6 @@ def distribute_file(file_name, num_partitions, size, response, start_from=0):
             datanodes[file_name] = {}
         datanodes[file_name][partition_name(i)] = [active_datanodes[datanode_index]]
         datanode_index += 1
-    print(datanodes)
     files[file_name] = size
     return response
 
@@ -163,7 +162,6 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
 def monitor_heartbeats_and_replication():
     while True:
         time.sleep(15)
-        print(datanodes)
         current_time = int(time.time())
         for url, timestamp in list(heartbeats.items()):
             if current_time - timestamp > 15:

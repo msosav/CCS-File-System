@@ -170,20 +170,6 @@ class ReplicateResponse(_message.Message):
     status_code: int
     def __init__(self, status_code: _Optional[int] = ...) -> None: ...
 
-class DeletePartitionRequest(_message.Message):
-    __slots__ = ("partition_name", "file_name")
-    PARTITION_NAME_FIELD_NUMBER: _ClassVar[int]
-    FILE_NAME_FIELD_NUMBER: _ClassVar[int]
-    partition_name: str
-    file_name: str
-    def __init__(self, partition_name: _Optional[str] = ..., file_name: _Optional[str] = ...) -> None: ...
-
-class DeletePartitionResponse(_message.Message):
-    __slots__ = ("status_code",)
-    STATUS_CODE_FIELD_NUMBER: _ClassVar[int]
-    status_code: int
-    def __init__(self, status_code: _Optional[int] = ...) -> None: ...
-
 class DeleteNodeFileRequest(_message.Message):
     __slots__ = ("file_name", "partition_name", "url")
     FILE_NAME_FIELD_NUMBER: _ClassVar[int]
