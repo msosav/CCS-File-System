@@ -28,13 +28,16 @@ def distribute_file(file_name, num_partitions, size, response, start_from=0):
     for i in range(start_from, num_partitions):
         if datanode_index >= len(active_datanodes):
             datanode_index = 0
-        response.partitions[partition_name(i)] = active_datanodes[datanode_index]
+        response.partitions[partition_name(
+            i)] = active_datanodes[datanode_index]
         if file_name not in datanodes:
             datanodes[file_name] = {}
-        datanodes[file_name][partition_name(i)] = [active_datanodes[datanode_index]]
+        datanodes[file_name][partition_name(i)] = [
+            active_datanodes[datanode_index]]
         datanode_index += 1
     files[file_name] = size
     return response
+
 
 def partition_name(i):
     """
@@ -62,8 +65,10 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
         response = Service_pb2.CreateResponse()
         if file_name in files:
             last_num_partitions = len(datanodes[file_name].keys())
-            last_partition_urls = datanodes[file_name][partition_name(last_num_partitions - 1)]
-            distribute_file(file_name, num_partitions, size, response, last_num_partitions - 1)
+            last_partition_urls = datanodes[file_name][partition_name(
+                last_num_partitions - 1)]
+            distribute_file(file_name, num_partitions, size,
+                            response, last_num_partitions - 1)
             response.last_partition_urls.extend(last_partition_urls)
         else:
             distribute_file(file_name, num_partitions, size, response)
@@ -142,7 +147,7 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             data_node_info.url.extend(urls)
             response.partitions[partition_name].CopyFrom(data_node_info)
         return response
-    
+
     def DeleteNodeFile(self, request, context):
         """
         Elimina un archivo
@@ -157,8 +162,8 @@ class NameNodeServicer(Service_pb2_grpc.NameNodeServicer):
             return Service_pb2.DeleteNodeFileResponse(message="OK")
         datanodes[file_name][partition_name].remove(request.url)
         return Service_pb2.DeleteNodeFileResponse(message="OK")
-        
-    
+
+
 def monitor_heartbeats_and_replication():
     while True:
         time.sleep(15)
@@ -187,7 +192,8 @@ def monitor_heartbeats_and_replication():
                 if not partition_name or not urls:
                     continue
                 if len(urls) < 3:
-                    missing_urls = [url for url in active_datanodes if url not in urls]
+                    missing_urls = [
+                        url for url in active_datanodes if url not in urls]
                     if missing_urls:
                         urlWithFile = random.choice(urls)
                         url = random.choice(missing_urls)
@@ -200,16 +206,16 @@ def monitor_heartbeats_and_replication():
                                     url=url,
                                 )
                             )
-                
 
 
 if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_NameNodeServicer_to_server(NameNodeServicer(), server)
-    server.add_insecure_port("localhost:8080")
+    server.add_insecure_port("[::]:8080")
     server.start()
     print("NameNode running at port 8080.")
-    monitor_heartbeats_thread = Thread(target=monitor_heartbeats_and_replication)
+    monitor_heartbeats_thread = Thread(
+        target=monitor_heartbeats_and_replication)
     monitor_heartbeats_thread.daemon = True
     monitor_heartbeats_thread.start()
     server.wait_for_termination()
