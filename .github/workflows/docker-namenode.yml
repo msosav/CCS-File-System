@@ -2,8 +2,10 @@ name: Docker Image CI NameNode
 
 on:
   push:
-    branches:
-      - "main"
+    branches: ["main"]
+    paths-ignore:
+      - ".github/**"
+      - "README.md"
   workflow_dispatch:
 
 jobs:
