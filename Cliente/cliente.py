@@ -13,7 +13,6 @@ import dotenv
 dotenv.load_dotenv()
 
 SERVER_IP = os.getenv("SERVER_IP")
-SERVER_PORT = os.getenv("SERVER_PORT")
 
 
 def list_files():
@@ -21,7 +20,7 @@ def list_files():
     Lista los archivos
     return: None
     """
-    channel = grpc.insecure_channel(f"{SERVER_IP}:{SERVER_PORT}")
+    channel = grpc.insecure_channel(f"{SERVER_IP}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.ListFiles(Service_pb2.ListFilesRequest())
     files = response.files
@@ -99,7 +98,7 @@ def upload_file(file_name, num_partitions, size):
     param size: El tamaño del archivo
     return: None
     """
-    channel = grpc.insecure_channel(f"{SERVER_IP}:{SERVER_PORT}")
+    channel = grpc.insecure_channel(f"{SERVER_IP}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.Create(
         Service_pb2.CreateRequest(
@@ -141,7 +140,7 @@ def upload_file(file_name, num_partitions, size):
 
 
 def download_file(file_name):
-    channel = grpc.insecure_channel(f"{SERVER_IP}:{SERVER_PORT}")
+    channel = grpc.insecure_channel(f"{SERVER_IP}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.Download(Service_pb2.DownloadRequest(file_name=file_name))
     partitions = response.partitions
