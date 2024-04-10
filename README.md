@@ -6,52 +6,109 @@
 - **Miguel Jaramillo**
 - **Miguel Sosa**
 
-## Marco Teórico
+## Descripción
 
-- **GFS (Google File System):** GFS es el sistema de archivos distribuidos que usa Google. Su estructura es la siguiente. Cada cluster contiene un _master_ y múltiples _chunckservers_ que son accedidos por múltiples _clientes_. Cada chunkserver tiene _chunks_ dentro de él, que son las particiones donde están ubicados los archivos. El master constantemente verifica que haya tres réplicas de cada chunk en diferentes chunckservers, por eso, a la hora de que un chunkserver falle, el master se encarga de crear una replica de cada chunk que hubiera en ese chunkserver para que vuelva a haber 3 de ellas.
+Un sistema de archivos distribuidos permite compartir y acceder de forma concurrente un conjunto de archivos almacenados en diferentes nodos. Uno de los sistemas más maduros, vigente y antiguo de estos sistemas es el NFS (Network File System) desarrollado en su momento por Sun Microsystems y que hoy en día es ampliamente usado en sistemas Linux. Hay otros sistemas de archivos distribuidos como AFS (Andrew File System) y SMB (Server Message Block) conocido como CIFS.
 
-  Un aspecto importante es que el master **nunca** escribe ni lee archivos, solo le dice al cliente a que chunkserver se debe conectar.
+En general hay dos acercamientos para el diseño e implementación de un DFS: 1) basado en bloques y basado en objetos.
 
-  Otro componente importante del sistema es el _operational log_, que es un registro que tiene la información de los archivos, incluyendo cosas como su dirección, su tamaño y en que chunkservers se encuentra ubicado.
+Los DFS basados en bloques generalmente garantizan 2 aspectos: 1) la unidad de escritura y lectura es a nivel de bloque, y los bloques pueden ser distribuidos en diferentes nodos, la idea es que los bloques de un archivo estén distribuidos en un conjunto de nodos. 2) el sistema operativo cliente de un DFS garantiza transparencia en el sentido de que la API ofrecida desde el SO es igual para acceder archivos locales que remotos, porque el DFS se integra con el sistema de gestión de archivos del sistema operativo (ej: NFS, AFS, SMB, etc).
 
-  Ahora, con respecto al proceso de lectura, el cliente le pregunta al master de donde puede leer el archivo, el master le devuelve las direcciones de los 3 chunkservers para que el cliente haga la consulta. Si alguno de los chunkservers no se encuentra disponible el cliente puede simplemente acceder a otra réplica ya que tiene la dirección de las 3.
-
-  Y con el proceso de escritura, el cliente le pide al master en que chunkserver puede escribir, que se denominará el _chunkserver primario_, y este será el encargado de escribir en los otros chunks para que todos tengan la misma información, todo este proceso ocurre de manera lineal.
-
-- **HDFS (Hadoop Distributed File System):** HDFS es un sistema de archivos distribuido creado por Apache y Yahoo!. Su arquitectura está constituida por un _NameNode_ que es el encargado de la localización de los recursos y se asegura que siempre hayan 3 réplicas de cada bloque de archivo. Los _DataNodes_ que se encargan de almacenar los bloques de archivos y de periodicamente mandarle al servidor información de su capacidad de almacenamiento y otros aspectos relevantes para la toma de decisiones.
-
-  Su funcionamiento e implementación es muy similar al GFS, pero hay dos componentes clave que destacan en HDFS, estos son _CheckpointNode_ y _BackupNode_.
-
-  El CheckpointNode es responsable de realizar checkpoints regulares del namespace de HDFS. Esencialmente, el CheckpointNode almacena una copia del namespace en un formato más persistente, lo que ayuda a garantizar la integridad y la eficiencia del sistema.
-
-  El BackupNode es similar al CheckpointNode, este es responsable de mantener una copia actualizada y persistente del namespace de HDFS, pero, a diferencia del CheckpointNode, el BackupNode no solo mantiene un estado consistente del sistema de archivos en disco, sino que también puede asumir temporalmente las responsabilidades de NameNode en caso de fallo de este último. Lo que permite una recuperación más rápida y eficiente del sistema en situaciones críticas.
-
-### Glosario
-
-- **_Sistema de archivos distribuido:_** Es un esquema de almacenamiento y gestión de datos que permite a los usuarios o a las aplicaciones acceder a archivos de datos como PDF, documentos de Word, imágenes, archivos de vídeo, archivos de audio, etc., desde un almacenamiento compartido en cualquiera de los múltiples servidores en red.
-- **_Log:_** Es un archivo que registra eventos específicos dentro de un sistema.
-- **_Réplica:_** Es la copia que se tiene de un recurso en específico.
-- **_Namespace:_** Es una abstracción que permite a los usuarios y aplicaciones interactuar con los archivos y directorios como si estuvieran almacenados en un único sistema de archivos, incluso cuando en realidad están distribuidos en varios servidores o ubicaciones físicas.
-- **_Checkpoint:_** Es una copia de seguridad del estado actual de una máquina.
+Los DFS basados en objetos (object storage, ej: AWS S3), los dos aspectos anteriores se manejan así: 1) la unidad de distribución es a nivel de archivo y no de bloque, es decir, y se garantiza que se lee o escribe un archivo como un todo y no a nivel de bloque. No está diseñado como un sistema de acceso aleatorio al archivo sino secuencial. No soporta la operación de actualización parcial del archivo, sino que se debe reemplazar todo el archivo. Son sistemas distribuidos de archivos principalmente diseñado para un enfoque WORM (Read-Once-Read-Many). Típicamente estos DFS soporta altos niveles de escalabilidad, redundancia y rendimiento. Si bien desde el cliente tiene una visión de archivo completo, en el sistema de backend podría tener (y normalmente lo hay) un mecanismo de particionamiento del archivo por bloques u otro criterio para mejorar la escalabilidad, tolerancia a fallos y rendimiento. 2) el sistema operativo local del cliente NO integra directamente la gestión de este DFS y, en vez de ello, se cuenta con un SDK o API para las primitivas de la gestión de archivos y suelen tener su propio CLI.
 
 ## Arquitectura
 
 <p align="center">
-    <img src="https://github.com/msosav/Proyectos-TETL/assets/85181687/10981dee-1dcc-4c64-b88b-251339c73e4b" />
+  <img src="https://github.com/msosav/CCS-File-System/assets/85181687/3ce303fa-3b46-4a13-b845-5fac582a9990" />
 </p>
 
-### Protocolos de conexión entre los componentes
+Todas las comunicaciones se harán con gRPC.
 
-- **Cliente - NameNode:** Será por medio de Api Rest.
-- **Cliente - DataNode:** Será por medio de Api Rest.
-- **NameNode - DataNode:** Será por medio de gRPC.
-- **DataNode - DataNode:** Será por medio de gRPC.
-- **NameNode - NameNode:** Será por medio de gRPC.
+## Resolución de los retos
 
-## Referencias
+### Particionamiento
 
-- The Google File System - Sanjay Ghemawat, Howard Gobioff & Shun-Tak Leung
-- The Hadoop Distributed File System - Konstantin Shvachko, Hairong Kuang, Sanjay Radia, Robert Chansler
-- [¿Qué es el DFS? - Sistema de archivos distribuidos](https://www.nutanix.com/es/info/distributed-file-systems)
-- [¿Qué son los logs y para qué sirven?](https://keepcoding.io/blog/que-son-logs-y-para-que-sirven/)
-- [Sistemas distribuidos: replicación (IV)](https://medium.com/@edusalguero/sistemas-distribuidos-replicacion-14d8f3819c1d)
+Para el particionamiento se usará la misma técnica usada en HDFS (Hadoop distributed file system). El acercamiento que ellos toman es que los archivos se tratan como directorios, y que adentro de ellos se guardan las partes en las que se divide el archivo. Esto facilita la concurrencia a la hora de la escritura debido a que los clientes pueden agregar diferentes partes del archivo en diferentes nodos solo con el indicador de secuencia que el NameNode da, que es part-000x, lo que permite una fácil reconstrucción del archivo.
+
+### Replicación
+
+Para la replicación manejaremos el tener siempre 3 replicas. Además, se utilizará la misma técnica que en Hadoop distributed file system. Esta técnica es que la replicación se hará de manera lineal, el cliente se comunica con el primer dataNode y ya este dataNode se comunica con un segundo dataNode y este segundo se comunica con el tercer y último dataNode para así cumplir con el tener las 3 replicas que especificamos. Esto proporciona diferentes ventajas como lo son la tolerancia a fallos, ya que si un dataNode falla hay al menos otros dos que tienen la información que esta tenia, también ayuda a la disponibilidad, porque si necesitan leer una partición varios clientes, podrán leerlo de distintos dataNodes a la vez.
+
+### Mantener el directorio o sistema de archivos.
+
+Para el sistema de archivos utilizamos una comunicación de tipo gRPC entre el Cliente y el NameNode, en donde el Cliente solicita al NameNode la lista de archivos existentes y este le devuelve una respuesta gRPC que contiene el nombre del archivo y los KB (usando el comando “ls”).
+
+## Protocolos
+
+### NameNode
+
+- **Create:** se encarga de crear un archivo
+- **ListFiles:** se encarga de listar los archivos
+- **ReplicationURL:** se encarga de realizar una solicitud a la URL
+- **SaveNodeFile:** se encarga de guardar que un data node tiene un archivo
+- **DeleteNodeFile:** se encarga de eliminar un archivo
+- **HeartBeat:** se encarga de realizar un “latido” para ver los DataNodes activos
+- **Download:** se encarga de descargar un archivo
+
+### DataNode
+
+- **SendPartition:** se encarga de enviar una partición
+- **DownloadPartition:** se encarga de descargar una partición
+- **Replicate:** se encarga de replicar una partición
+
+## Despliegue
+
+### NameNode
+
+Para desplegar el sistema de archivos distribuido se debe seguir los siguientes pasos (con Docker instalado):
+
+1. Hacerle pull a la imagen de NameNode:
+
+```bash
+docker pull msosav/ccs-file-system-namenode:latest
+```
+
+2. Correr el contenedor de NameNode:
+
+```bash
+docker run -d -p 8080:8080 msosav/ccs-file-system-namenode
+```
+
+### DataNode
+
+Para desplegar el sistema de archivos distribuido se debe seguir los siguientes pasos (con Docker instalado):
+
+1. Hacerle pull a la imagen de DataNode:
+
+```bash
+docker pull msosav/ccs-file-system-datanode:latest
+```
+
+2. Correr el contenedor de DataNode:
+
+```bash
+docker run -d -p 50051:50051 -e SERVER_IP="12.34.56.7" -e SELF_IP="12.34.56.7" msosav/ccs-file-system-datanode
+```
+
+### Cliente
+
+Para desplegar el sistema de archivos distribuido se debe seguir los siguientes pasos (con Docker instalado):
+
+1. Hacerle pull a la imagen de Cliente:
+
+```bash
+docker pull msosav/ccs-file-system-cliente:latest
+```
+
+2. Correr el contenedor de Cliente:
+
+```bash
+docker run -it -d -e SERVER_IP="12.34.56.7" msosav/ccs-file-system-cliente
+```
+
+3. Para ejecutar el cliente:
+
+```bash
+docker exec -it <container_id> bash
+pipenv run python cliente.py
+```
