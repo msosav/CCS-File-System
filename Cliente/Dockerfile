@@ -8,5 +8,8 @@ RUN pip install pipenv
 
 RUN pipenv install --deploy --ignore-pipfile
 
-ARG SERVER_URL
-ENV SERVER_URL $SERVER_URL
+ARG SERVER_IP
+ENV SERVER_IP $SERVER_IP
+
+ARG SERVER_PORT
+ENV SERVER_PORT $SERVER_PORT

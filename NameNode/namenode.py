@@ -209,6 +209,7 @@ def monitor_heartbeats_and_replication():
 
 
 if __name__ == "__main__":
+    print("NameNode starting...")
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_NameNodeServicer_to_server(NameNodeServicer(), server)
     server.add_insecure_port("[::]:8080")

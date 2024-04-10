@@ -10,7 +10,7 @@ import dotenv
 
 dotenv.load_dotenv()
 
-SERVER_URL = os.getenv("SERVER_URL")
+SERVER_IP = os.getenv("SERVER_IP")
 SELF_IP = os.getenv("SELF_IP")
 
 
@@ -20,7 +20,7 @@ def get_replication_url(partition_name, file_name):
     param partition_name: El nombre de la partición
     return: None
     """
-    channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
+    channel = grpc.insecure_channel(f"{SERVER_IP}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     response = stub.ReplicationUrl(
         Service_pb2.ReplicationUrlRequest(
@@ -43,7 +43,7 @@ class DataNodeServicer(Service_pb2_grpc.DataNodeServicer):
         storage_path = f"{file_name}/{partition_name}"
         with open(storage_path, "wb") as f:
             f.write(request.partition_data)
-        channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
+        channel = grpc.insecure_channel(f"{SERVER_IP}:8080")
         stub = Service_pb2_grpc.NameNodeStub(channel)
         reponse = stub.SaveNodeFile(
             Service_pb2.SaveNodeFileRequest(
@@ -100,7 +100,7 @@ def send_heartbeats():
     while True:
         timestamp = int(time.time())
         try:
-            channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
+            channel = grpc.insecure_channel(f"{SERVER_IP}:8080")
             stub = Service_pb2_grpc.NameNodeStub(channel)
             stub.HeartBeat(
                 Service_pb2.HeartBeatRequest(
@@ -117,7 +117,7 @@ def save_node_file(file_name):
     param file_name: El nombre del archivo
     return: None
     """
-    channel = grpc.insecure_channel(f"{SERVER_URL}:8080")
+    channel = grpc.insecure_channel(f"{SERVER_IP}:8080")
     stub = Service_pb2_grpc.NameNodeStub(channel)
     stub.SaveNodeFile(
         Service_pb2.SaveNodeFileRequest(
@@ -128,7 +128,7 @@ def save_node_file(file_name):
 if __name__ == "__main__":
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     Service_pb2_grpc.add_DataNodeServicer_to_server(DataNodeServicer(), server)
-    server.add_insecure_port(f"{SELF_IP}:50051")
+    server.add_insecure_port(f"[::]:50051")
     server.start()
     send_heartbeats_thread = Thread(target=send_heartbeats)
     send_heartbeats_thread.daemon = True
